@@ -20,7 +20,8 @@ export const CONFIG = {
   },
 
   // Image
-  IMAGE_URL: 'https://y2.vyshgorod.in.ua/dtek_data/images/kyiv-region/today.png',
+  TODAY_IMAGE_URL: 'https://y2.vyshgorod.in.ua/dtek_data/images/kyiv-region/today.png',
+  TOMORROW_IMAGE_URL: 'https://y2.vyshgorod.in.ua/dtek_data/images/kyiv-region/tomorrow.png',
 
   // Messages
   MESSAGES: {
