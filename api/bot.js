@@ -1,31 +1,41 @@
 import 'dotenv/config';
 import { Telegraf } from 'telegraf';
 
-import { getCurrentDateKyiv, withRetry, fetchDTEKData, formatDTEKMessage, getHouseDataFromResponse } from './helpers.js';
 import { CONFIG } from './config.js';
+import {
+  withRetry,
+  fetchDTEKData,
+  formatDTEKMessage,
+  getHouseDataFromResponse,
+  getCurrentDateKyiv
+} from './helpers.js';
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
 bot.command('dtek', async (ctx) => {
   try {
     console.log('DTEK command started');
+
     const currentDate = getCurrentDateKyiv();
-    console.log('Current date:', currentDate);
+
+    console.log('Current Kyiv date:', currentDate);
 
     const json = await withRetry(() => fetchDTEKData(currentDate));
 
-    console.log('Parsed JSON successfully');
+    console.log('Retrieved DTEK data:', json);
 
     const house = getHouseDataFromResponse(json, process.env.DTEK_HOUSE);
+
+    console.log('House data retrieved:', house);
 
     if (!house) {
       return ctx.reply(CONFIG.MESSAGES.NO_INFO);
     }
 
-    console.log('DTEK command completed successfully');
-
-    const caption = formatDTEKMessage(house, process.env.DTEK_STREET, json?.updateTimestamp);
+    const caption = formatDTEKMessage(house, process.env.DTEK_STREET, currentDate, json?.updateTimestamp);
     const imageUrl = `${CONFIG.IMAGE_URL}?v=${Date.now()}`;
+
+    console.log('Sending photo with caption:', caption);
 
     return ctx.replyWithPhoto(imageUrl, { caption });
   } catch (err) {
