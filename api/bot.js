@@ -34,29 +34,8 @@ bot.command('dtek', async (ctx) => {
 
     const caption = formatDTEKMessage(house, process.env.DTEK_STREET, currentDate, json?.updateTimestamp);
     const todayImgURL = `${CONFIG.TODAY_IMAGE_URL}?v=${Date.now()}`;
-    const tomorrowImgURL = `${CONFIG.TOMORROW_IMAGE_URL}?v=${Date.now()}`;
 
-    console.log('Sending photos with caption:', caption);
-
-    // Prepare media array
-    const media = [
-      { type: 'photo', media: todayImgURL, caption }
-    ];
-
-    // Check if tomorrow's image is available
-    if (CONFIG.TOMORROW_IMAGE_URL) {
-      try {
-        const response = await fetch(tomorrowImgURL, { method: 'HEAD' });
-        if (response.ok) {
-          media.push({ type: 'photo', media: tomorrowImgURL });
-        }
-      } catch (error) {
-        console.log('Tomorrow\'s image not available:', error.message);
-      }
-    }
-
-    // Send as media group
-    return ctx.replyWithMediaGroup(media);
+    return ctx.replyWithPhoto(todayImgURL, { caption });
   } catch (err) {
     console.error('DTEK command error:', err);
 
