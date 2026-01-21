@@ -55,6 +55,16 @@ export const getCurrentDateKyiv = () => {
   }).replace(',', '');
 };
 
+export const checkImageExists = async (url) => {
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    return response.ok;
+  } catch (error) {
+    console.error('Error checking image:', error.message);
+    return false;
+  }
+};
+
 export const withRetry = async (fn, maxRetries = CONFIG.RETRY_MAX_ATTEMPTS) => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {

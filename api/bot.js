@@ -7,7 +7,8 @@ import {
   fetchDTEKData,
   formatDTEKMessage,
   getHouseDataFromResponse,
-  getCurrentDateKyiv
+  getCurrentDateKyiv,
+  checkImageExists
 } from './helpers.js';
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
@@ -35,7 +36,13 @@ bot.command('dtek', async (ctx) => {
     const caption = formatDTEKMessage(house, process.env.DTEK_STREET, currentDate, json?.updateTimestamp);
     const todayImgURL = `${CONFIG.TODAY_IMAGE_URL}?v=${Date.now()}`;
 
-    return ctx.replyWithPhoto(todayImgURL, { caption });
+    const imageExists = await checkImageExists(todayImgURL);
+
+    if (imageExists) {
+      return ctx.replyWithPhoto(todayImgURL, { caption });
+    } else {
+      return ctx.reply(caption);
+    }
   } catch (err) {
     console.error('DTEK command error:', err);
 
