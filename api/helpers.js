@@ -1,84 +1,18 @@
-import { CONFIG } from './config.js';
+export {
+  getCurrentDateKyiv,
+  calculateTimeDifference,
+  toKyivDayMonth
+} from './utils/dateUtils.js';
+export {
+  checkImageExists,
+  withRetry
+} from './utils/httpClient.js';
+export {
+  formatScheduleText,
+  formatDTEKMessage
+} from './utils/messageFormatter.js';
+
 import { fetchDTEKCurrentInfo } from './request.js';
-
-const parseKyivDateString = (dateStr) => {
-  if (typeof dateStr !== 'string' || !dateStr.trim()) {
-    throw new Error(`Invalid date string: "${dateStr}"`);
-  }
-
-  const [part1, part2] = dateStr.split(' ');
-  if (!part1 || !part2) {
-    throw new Error(`Invalid date format: expected "DD.MM.YYYY HH:MM" or "HH:MM DD.MM.YYYY", got "${dateStr}"`);
-  }
-
-  // Determine format: if part1 contains dots, it's a date; if it contains colons, it's time
-  const isDateFirst = part1.includes('.');
-  const [datePart, timePart] = isDateFirst ? [part1, part2] : [part2, part1];
-
-  const [day, month, year] = datePart.split('.').map(Number);
-  const [hours, minutes] = timePart.split(':').map(Number);
-
-  if (isNaN(hours) || isNaN(minutes) || isNaN(day) || isNaN(month) || isNaN(year)) {
-    throw new Error(`Invalid date values: "${dateStr}"`);
-  }
-
-  return new Date(year, month - 1, day, hours, minutes);
-};
-
-const formatTimeDifference = (diffMs) => {
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const diffHours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
-  const diffMinutes = Math.floor((diffMs / (1000 * 60)) % 60);
-
-  const timeParts = [diffDays > 0 && `${diffDays} дн`, `${diffHours} год`, `${diffMinutes} хв`].filter(Boolean);
-  return timeParts.join(' ');
-};
-
-
-const calculateTimeDifference = (date1Str, date2Str) => {
-  const date1 = parseKyivDateString(date1Str);
-  const date2 = parseKyivDateString(date2Str);
-  const diffMs = Math.abs(date2 - date1);
-
-  return diffMs <= 0 ? null : formatTimeDifference(diffMs);
-};
-
-export const getCurrentDateKyiv = () => {
-  return new Date().toLocaleString('uk-UA', {
-    timeZone: 'Europe/Kyiv',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  }).replace(',', '');
-};
-
-export const checkImageExists = async (url) => {
-  try {
-    const response = await fetch(url, { method: 'HEAD' });
-    return response.ok;
-  } catch (error) {
-    console.error('Error checking image:', error.message);
-    return false;
-  }
-};
-
-export const withRetry = async (fn, maxRetries = CONFIG.RETRY_MAX_ATTEMPTS) => {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      console.log(`Attempt ${attempt} of ${maxRetries}`);
-      return await fn();
-    } catch (error) {
-      console.error(`Error on attempt ${attempt}:`, error.message);
-      if (attempt === maxRetries) throw error;
-      // Exponential backoff: 100ms, 200ms, 400ms, 800ms, 1.6s, 3s (capped)
-      const delayMs = Math.min(100 * Math.pow(2, attempt - 1), 3000);
-      await new Promise(resolve => setTimeout(resolve, delayMs));
-    }
-  }
-};
 
 export const getHouseDataFromResponse = (json, houseId) => {
   if (!json?.data) {
@@ -95,33 +29,7 @@ export const getHouseDataFromResponse = (json, houseId) => {
   return house;
 };
 
-export const formatDTEKMessage = (house, street, currentDate, updateTimestamp) => {
-  const houseGroup = house.sub_type_reason[0]?.slice(-3) ?? 'невідомо';
-
-  if (!house?.sub_type || (!house?.start_date && !house?.end_date)) {
-    return [
-      `Інформація про відключення на ${street} (група ${houseGroup}) відсутня.`,
-      `Якщо в даний момент у вас відсутнє світло, імовірно виникла аварійна ситуація, або діють стабілізаційні або екстрені відключення. Просимо перевірити інформацію через 15 хвилин, саме стільки часу потрібно для оновлення даних на сайті.`,
-      `Дата оновлення інформації: ${updateTimestamp}`
-    ].join('\n\n');
-  }
-
-  const timeSince = calculateTimeDifference(house.start_date, currentDate) || 'Невідомо';
-  const timeUntil = calculateTimeDifference(house.end_date, currentDate) || 'Невідомо';
-
-  return [
-    `За адресою ${street} (група ${houseGroup}) зафіксовано:`,
-    `${house.sub_type}\n`,
-    `Початок: ${house.start_date}`,
-    `Кінець: ${house.end_date}\n`,
-    `Без світла: ${timeSince}`,
-    `До відновлення залишилось: ${timeUntil}\n`,
-    `Дата оновлення інформації: ${updateTimestamp}`
-  ].join('\n');
-};
-
 export const fetchDTEKData = async (currentDate) => {
-
   const res = await fetchDTEKCurrentInfo(currentDate);
 
   console.log('DTEK API response status:', res.status, res.statusText);

@@ -23,17 +23,17 @@ bot.command('dtek', async (ctx) => {
 
     const json = await withRetry(() => fetchDTEKData(currentDate));
 
-    console.log('Retrieved DTEK data:', json);
+    console.log('Retrieved DTEK data:', JSON.stringify(json, null, 2));
 
     const house = getHouseDataFromResponse(json, process.env.DTEK_HOUSE);
 
-    console.log('House data retrieved:', house);
+    console.log('House data retrieved:', JSON.stringify(house, null, 2));
 
     if (!house) {
       return ctx.reply(CONFIG.MESSAGES.NO_INFO);
     }
 
-    const caption = formatDTEKMessage(house, process.env.DTEK_STREET, currentDate, json?.updateTimestamp);
+    const caption = formatDTEKMessage(house, process.env.DTEK_STREET, currentDate, json?.updateTimestamp, json?.fact, json?.preset);
     const todayImgURL = `${CONFIG.TODAY_IMAGE_URL}?v=${Date.now()}`;
 
     const imageExists = await checkImageExists(todayImgURL);
