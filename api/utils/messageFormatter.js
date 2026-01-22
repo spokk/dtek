@@ -106,7 +106,37 @@ export const formatDTEKMessage = (
     reasonKey?.slice(-3) ||
     'Невідомо';
 
-  const todayUNIX = fact?.today;
+  let todayUNIX = fact?.today;
+
+  // Try to convert to number if it's a string
+  if (typeof todayUNIX === 'string') {
+    todayUNIX = parseInt(todayUNIX, 10);
+  }
+
+  // Validate that todayUNIX is a valid UNIX timestamp
+  if (!Number.isInteger(todayUNIX) || todayUNIX <= 0) {
+    console.warn('Invalid or missing fact.today:', fact?.today, 'parsed:', todayUNIX);
+    const hasOutagePeriod = house?.sub_type && (house?.start_date || house?.end_date);
+
+    if (!hasOutagePeriod) {
+      return [
+        `Інформація про відключення на ${street} (${houseGroup}) відсутня.`,
+        `Якщо в даний момент у вас відсутнє світло, імовірно виникла аварійна ситуація, або діють стабілізаційні або екстрені відключення.`,
+        `Дата оновлення інформації: ${updateTimestamp}`,
+      ].join('\n\n');
+    }
+
+    const timeSince = calculateTimeDifference(house.start_date, currentDate) || 'Невідомо';
+    const timeUntil = calculateTimeDifference(house.end_date, currentDate) || 'Невідомо';
+
+    return [
+      `За адресою ${street} (${houseGroup}) зафіксовано: \n${house.sub_type}`,
+      `Початок: ${house.start_date}\nКінець: ${house.end_date}`,
+      `Без світла: ${timeSince}\nДо відновлення залишилось: ${timeUntil}`,
+      `Дата оновлення інформації: ${updateTimestamp}`,
+    ].join('\n\n');
+  }
+
   const tomorrowUNIX = add24Hours(todayUNIX);
   const hoursDataToday = fact?.data?.[todayUNIX]?.[reasonKey];
   const hoursDataTomorrow = fact?.data?.[tomorrowUNIX]?.[reasonKey];
