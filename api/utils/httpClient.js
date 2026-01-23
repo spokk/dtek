@@ -1,6 +1,6 @@
 export const checkImageExists = async (url) => {
   try {
-    const response = await fetch(url, { method: 'HEAD' });
+    const response = await fetch(url, { method: 'HEAD', cache: 'no-store' });
     return response.ok;
   } catch (error) {
     console.error('Error checking image:', error.message);

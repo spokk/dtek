@@ -53,6 +53,12 @@ bot.command('dtek', async (ctx) => {
 export default async (req, res) => {
   if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
+  // Disable all caching at HTTP level
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('X-Accel-Expires', '0');
+
   try {
     await bot.handleUpdate(req.body);
     res.status(200).send('OK');
