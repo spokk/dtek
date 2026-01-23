@@ -1,3 +1,10 @@
+import {
+  extractTodayUNIX,
+  getHouseGroup,
+  getHoursData,
+  hasOutagePeriod
+} from '../helpers.js';
+
 import { add24Hours, calculateTimeDifference, toKyivDayMonth } from './dateUtils.js';
 
 export const formatScheduleText = (hoursData, timeZone, timeType) => {
@@ -92,54 +99,40 @@ const buildOutageMessage = (street, houseGroup, house, currentDate, scheduleBloc
 };
 
 export const formatDTEKMessage = (
-  house,
+  dtekResponse = {},
+  houseData,
   street,
   currentDate,
-  updateTimestamp,
-  fact,
-  preset
 ) => {
-  const reasonKey = house?.sub_type_reason?.[0];
+  const { updateTimestamp, fact, preset } = dtekResponse;
+  const reasonKey = houseData?.sub_type_reason?.[0];
+  const houseGroup = getHouseGroup(houseData, preset);
 
-  const houseGroup =
-    preset?.sch_names?.[reasonKey] ||
-    reasonKey?.slice(-3) ||
-    'Невідомо';
+  const todayUNIX = extractTodayUNIX(fact);
 
-  let todayUNIX = fact?.today;
+  // Handle invalid or missing date
+  if (!todayUNIX) {
+    console.warn('Invalid or missing fact.today:', fact?.today);
+    const outageExists = hasOutagePeriod(houseData);
+    const scheduleBlocks = [];
 
-  // Try to convert to number if it's a string
-  if (typeof todayUNIX === 'string') {
-    todayUNIX = parseInt(todayUNIX, 10);
-  }
-
-  // Validate that todayUNIX is a valid UNIX timestamp
-  if (!Number.isInteger(todayUNIX) || todayUNIX <= 0) {
-    console.warn('Invalid or missing fact.today:', fact?.today, 'parsed:', todayUNIX);
-    const hasOutagePeriod = house?.sub_type && (house?.start_date || house?.end_date);
-
-    if (!hasOutagePeriod) {
-      return [
-        `Інформація про відключення на ${street} (${houseGroup}) відсутня.`,
-        `Якщо в даний момент у вас відсутнє світло, імовірно виникла аварійна ситуація, або діють стабілізаційні або екстрені відключення.`,
-        `Дата оновлення інформації: ${updateTimestamp}`,
-      ].join('\n\n');
+    if (!outageExists) {
+      return buildNoOutageMessage(street, houseGroup, scheduleBlocks, updateTimestamp);
     }
-
-    const timeSince = calculateTimeDifference(house.start_date, currentDate) || 'Невідомо';
-    const timeUntil = calculateTimeDifference(house.end_date, currentDate) || 'Невідомо';
-
-    return [
-      `За адресою ${street} (${houseGroup}) зафіксовано: \n${house.sub_type}`,
-      `Початок: ${house.start_date}\nКінець: ${house.end_date}`,
-      `Без світла: ${timeSince}\nДо відновлення залишилось: ${timeUntil}`,
-      `Дата оновлення інформації: ${updateTimestamp}`,
-    ].join('\n\n');
+    return buildOutageMessage(
+      street,
+      houseGroup,
+      houseData,
+      currentDate,
+      scheduleBlocks,
+      updateTimestamp
+    );
   }
 
+  // Build schedule with valid dates
   const tomorrowUNIX = add24Hours(todayUNIX);
-  const hoursDataToday = fact?.data?.[todayUNIX]?.[reasonKey];
-  const hoursDataTomorrow = fact?.data?.[tomorrowUNIX]?.[reasonKey];
+  const hoursDataToday = getHoursData(fact, reasonKey, todayUNIX);
+  const hoursDataTomorrow = getHoursData(fact, reasonKey, tomorrowUNIX);
 
   const scheduleBlocks = buildScheduleBlocks(
     todayUNIX,
@@ -149,16 +142,15 @@ export const formatDTEKMessage = (
     preset
   );
 
-  const hasOutagePeriod = house?.sub_type && (house?.start_date || house?.end_date);
-
-  if (!hasOutagePeriod) {
+  // Return appropriate message based on outage period
+  if (!hasOutagePeriod(houseData)) {
     return buildNoOutageMessage(street, houseGroup, scheduleBlocks, updateTimestamp);
   }
 
   return buildOutageMessage(
     street,
     houseGroup,
-    house,
+    houseData,
     currentDate,
     scheduleBlocks,
     updateTimestamp

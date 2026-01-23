@@ -1,15 +1,12 @@
 import 'dotenv/config';
 import { Telegraf } from 'telegraf';
 
+import { checkImageExists, withRetry } from './utils/httpClient.js';
+import { formatDTEKMessage } from './utils/messageFormatter.js';
+import { getCurrentDateKyiv } from './utils/dateUtils.js';
+
 import { CONFIG } from './config.js';
-import {
-  withRetry,
-  fetchDTEKData,
-  formatDTEKMessage,
-  getHouseDataFromResponse,
-  getCurrentDateKyiv,
-  checkImageExists
-} from './helpers.js';
+import { fetchDTEKData, getHouseDataFromResponse } from './helpers.js';
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
@@ -21,19 +18,19 @@ bot.command('dtek', async (ctx) => {
 
     console.log('Current Kyiv date:', currentDate);
 
-    const json = await withRetry(() => fetchDTEKData(currentDate));
+    const dtekResponse = await withRetry(() => fetchDTEKData(currentDate));
 
-    console.log('Retrieved DTEK data:', JSON.stringify(json, null, 2));
+    console.log('Retrieved DTEK data:', JSON.stringify(dtekResponse, null, 2));
 
-    const house = getHouseDataFromResponse(json, process.env.DTEK_HOUSE);
+    const houseData = getHouseDataFromResponse(dtekResponse, process.env.DTEK_HOUSE);
 
-    console.log('House data retrieved:', JSON.stringify(house, null, 2));
+    console.log('House data retrieved:', JSON.stringify(houseData, null, 2));
 
-    if (!house) {
+    if (!houseData) {
       return ctx.reply(CONFIG.MESSAGES.NO_INFO);
     }
 
-    const caption = formatDTEKMessage(house, process.env.DTEK_STREET, currentDate, json?.updateTimestamp, json?.fact, json?.preset);
+    const caption = formatDTEKMessage(dtekResponse, houseData, process.env.DTEK_STREET, currentDate);
     const todayImgURL = `${CONFIG.TODAY_IMAGE_URL}?v=${Date.now()}`;
 
     const imageExists = await checkImageExists(todayImgURL);
