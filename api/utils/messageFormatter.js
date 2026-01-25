@@ -79,8 +79,8 @@ const buildScheduleBlocks = (todayUNIX, tomorrowUNIX, hoursDataToday, hoursDataT
 const buildNoOutageMessage = (street, houseGroup, scheduleBlocks, updateTimestamp) => {
   return [
     `Інформація про відключення на ${street} (${houseGroup}) відсутня.`,
-    ...scheduleBlocks,
     `Якщо в даний момент у вас відсутнє світло, імовірно виникла аварійна ситуація, або діють стабілізаційні або екстрені відключення.`,
+    ...scheduleBlocks,
     `Дата оновлення інформації: ${updateTimestamp}`,
   ].join('\n\n');
 };

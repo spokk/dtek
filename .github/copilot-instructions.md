@@ -14,10 +14,10 @@
 - All errors caught at top level and return `CONFIG.MESSAGES.ERROR`
 
 ### 2. **Data Fetching** ([api/request.js](api/request.js))
-- Makes POST requests to `https://www.dtek-krem.com.ua/ua/ajax` with **strict headers** (mimics browser Chrome 142)
-- Authentication via environment variables: `DTEK_CSRF_TOKEN`, `DTEK_COOKIE`
-- Sends parameters as `URLSearchParams`: city, street, updateFact (date)
-- **Critical**: Headers include CSRF token and cookies—changes to these will break API access
+- **`fetchDTEKCurrentInfo()`**: Makes POST requests to `https://www.dtek-krem.com.ua/ua/ajax` with strict headers (mimics Chrome 142)
+- Authentication via environment variables: `DTEK_CSRF_TOKEN`, `DTEK_COOKIE`, plus `DTEK_CITY` and `DTEK_STREET`
+- Sends parameters as `URLSearchParams` with structure: `data[0][name]/[value]`, `data[1][name]/[value]`, etc.
+- **Critical**: CSRF token, cookies, and User-Agent headers must match DTEK's expectations—API rejects stale headers
 
 ### 3. **Data Transformation** ([api/helpers.js](api/helpers.js))
 - **`fetchDTEKData()`**: Fetches + parses JSON response, throws on non-OK status
@@ -68,7 +68,7 @@ DTEK_STREET=<street address>
 - **Framework**: [Telegraf](https://github.com/telegraf/telegraf) (Telegram bot library)
 - **Entry Point**: `api/bot.js` exports default serverless handler → auto-deployed to Vercel
 - **Deploy**: `npm run deploy` → Vercel CLI with `--prod` flag
-- **Node**: v22+ required (ES modules)
+- **Node**: v24+ required (ES modules, fetch API)
 - **Logging**: Heavy console.log use for debugging; keep them for production (Vercel logs visible)
 
 ## Common Modifications
