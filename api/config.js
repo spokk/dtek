@@ -22,6 +22,9 @@ export const CONFIG = {
   // Image
   TODAY_IMAGE_URL: 'https://y2.vyshgorod.in.ua/dtek_data/images/kyiv-region/today.png',
 
+  // Svitlo API
+  SVITLO_API_URL: 'https://api.svitlobot.in.ua/website/getChannelsForMap',
+
   // Messages
   MESSAGES: {
     NO_INFO: "❌ Немає інформації для цієї адреси чи відсутнє планове відключення",

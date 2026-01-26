@@ -35,12 +35,13 @@ export const fetchDTEKCurrentInfo = async (currentDate) => {
 };
 
 export const fetchPowerInfo = async () => {
-  const response = await fetch('https://api.svitlobot.in.ua/website/getChannelsForMap', {
+  const response = await fetch(CONFIG.SVITLO_API_URL, {
     method: 'GET',
+    cache: 'no-store',
     headers: {
       'accept': '*/*',
       'accept-language': 'en,uk;q=0.9',
-      'cache-control': 'no-cache',
+      "Cache-Control": "no-cache, no-store, must-revalidate",
       'dnt': '1',
       'origin': 'https://svitlobot.in.ua',
       'pragma': 'no-cache',
