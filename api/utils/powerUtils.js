@@ -67,14 +67,15 @@ export function filterCity(entries, cityName) {
   return entries.filter(e => e.city?.toLowerCase() === nameLower);
 }
 
-export function calculateLightPercent(entries) {
-  if (!entries.length) return '0';
+export function calculateLightPercent(entries = []) {
+  if (!entries.length) return 0;
 
-  const totalPlaces = entries.length;
-  const placesWithLight = entries.filter(e => e.lightStatus === 1).length;
+  const on = entries.reduce(
+    (sum, e) => sum + (e.lightStatus === 1),
+    0
+  );
 
-  const percent = ((placesWithLight / totalPlaces) * 100).toFixed(2);
-  return percent.endsWith('.00') ? percent.slice(0, -3) : percent;
+  return Math.round((on / entries.length) * 10000) / 100;
 }
 
 export function getPowerCityStats(cityName, entries) {
