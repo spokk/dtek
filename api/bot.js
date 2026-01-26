@@ -2,7 +2,8 @@ import 'dotenv/config';
 import { Telegraf } from 'telegraf';
 
 import { checkImageExists } from './utils/httpClient.js';
-import { fetchOutageData, formatOutageCaption, getTodayImageURL } from './services/outageService.js';
+import { fetchOutageData, getTodayImageURL } from './services/outageService.js';
+import { formatOutageMessage } from './utils/messageFormatter.js';
 
 import { CONFIG } from './config.js';
 
@@ -18,9 +19,12 @@ bot.command('dtek', async (ctx) => {
       return ctx.reply(CONFIG.MESSAGES.NO_INFO);
     }
 
-    const caption = formatOutageCaption(dtekResponse, houseData, powerStats, currentDate);
+    const caption = formatOutageMessage(dtekResponse, houseData, currentDate, powerStats);
     const todayImgURL = getTodayImageURL();
     const imageExists = await checkImageExists(todayImgURL);
+
+    console.log('DTEK command completed, sending response');
+    console.log('Caption:', caption);
 
     if (imageExists) {
       return ctx.replyWithPhoto(todayImgURL, { caption });

@@ -63,8 +63,6 @@ const buildScheduleBlocks = (todayUNIX, tomorrowUNIX, hoursDataToday, hoursDataT
     preset?.time_type
   );
 
-  console.log('Formatted schedule text:', scheduleToday);
-
   const blocks = [
     `Графік відключень на ${toKyivDayMonth(todayUNIX)}:\n${scheduleToday}`,
   ];
@@ -81,7 +79,7 @@ const buildNoOutageMessage = (street, houseGroup, scheduleBlocks, powerStats, up
     `Інформація про відключення на ${street} (${houseGroup}) відсутня.`,
     `Якщо в даний момент у вас відсутнє світло, імовірно виникла аварійна ситуація, або діють стабілізаційні або екстрені відключення.`,
     ...scheduleBlocks,
-    powerStats ? powerStats : '',
+    ...(powerStats ? [powerStats] : []),
     `Дата оновлення інформації: ${updateTimestamp}`,
   ];
 
@@ -97,7 +95,7 @@ const buildOutageMessage = (street, houseGroup, house, currentDate, scheduleBloc
     `Початок: ${house.start_date}\nКінець: ${house.end_date}`,
     `Без світла: ${timeSince}\nДо відновлення залишилось: ${timeUntil}`,
     ...scheduleBlocks,
-    powerStats ? powerStats : '',
+    ...(powerStats ? [powerStats] : []),
     `Дата оновлення інформації: ${updateTimestamp}`,
   ];
 
@@ -107,10 +105,10 @@ const buildOutageMessage = (street, houseGroup, house, currentDate, scheduleBloc
 export const formatOutageMessage = (
   dtekResponse = {},
   houseData,
-  street,
   currentDate,
   powerStats
 ) => {
+  const street = process.env.DTEK_STREET;
   const { updateTimestamp, fact, preset } = dtekResponse;
   const reasonKey = houseData?.sub_type_reason?.[0];
   const houseGroup = getHouseGroup(houseData, preset);

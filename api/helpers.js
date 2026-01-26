@@ -1,5 +1,3 @@
-import { fetchDTEKCurrentInfo } from './request.js';
-
 export const getHouseDataFromResponse = (json, houseNumber) => {
   if (!json?.data) {
     console.error('API Response structure:', JSON.stringify(json, null, 2));
@@ -13,20 +11,6 @@ export const getHouseDataFromResponse = (json, houseNumber) => {
   }
 
   return house;
-};
-
-export const fetchDTEKData = async (currentDate) => {
-  const res = await fetchDTEKCurrentInfo(currentDate);
-
-  console.log('DTEK API response status:', res.status, res.statusText);
-
-  if (!res.ok) {
-    throw new Error(`DTEK API returned error: ${res.status}`);
-  }
-
-  const text = await res.text();
-
-  return JSON.parse(text);
 };
 
 export const extractTodayUNIX = (fact) => {

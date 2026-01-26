@@ -8,13 +8,13 @@ export const checkImageExists = async (url) => {
   }
 };
 
-export const withRetry = async (fn, maxRetries = 10) => {
+export const withRetry = async (fn, maxRetries = 10, functionName = 'Unknown') => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`Attempt ${fn.name} #${attempt} of ${maxRetries}`);
+      console.log(`[${functionName}] Attempt #${attempt} of ${maxRetries}`);
       return await fn();
     } catch (error) {
-      console.error(`Error on attempt ${attempt}:`, error.message);
+      console.error(`[${functionName}] Error on attempt ${attempt}:`, error.message);
       if (attempt === maxRetries) throw error;
 
       const delayMs = Math.min(100 * Math.pow(2, attempt - 1), 3000);

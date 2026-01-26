@@ -1,7 +1,7 @@
 import { CONFIG } from './config.js';
 
 export const fetchDTEKCurrentInfo = async (currentDate) => {
-  const res = await fetch(CONFIG.DTEK_API_URL, {
+  const response = await fetch(CONFIG.DTEK_API_URL, {
     method: "POST",
     cache: 'no-store',
     headers: {
@@ -23,7 +23,15 @@ export const fetchDTEKCurrentInfo = async (currentDate) => {
     })
   });
 
-  return res;
+  console.log('DTEK API response status:', response.status, response.statusText);
+
+  if (!response.ok) {
+    throw new Error(`DTEK API returned error: ${response.status}`);
+  }
+
+  const text = await response.text();
+
+  return JSON.parse(text);
 };
 
 export const fetchPowerInfo = async () => {
@@ -48,8 +56,10 @@ export const fetchPowerInfo = async () => {
     }
   });
 
+  console.log('Svitlobot API response status:', response.status, response.statusText);
+
   if (!response.ok) {
-    throw new Error(`fetchPowerInfo HTTP error ${response.status}`);
+    throw new Error(`Svitlobot API HTTP error ${response.status}`);
   }
 
   const text = await response.text();
