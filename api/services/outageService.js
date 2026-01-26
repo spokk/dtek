@@ -1,7 +1,6 @@
 import { withRetry } from '../utils/httpClient.js';
 import { getCurrentDateKyiv } from '../utils/dateUtils.js';
 import { parsePowerResponse, getPowerCityStats } from '../utils/powerUtils.js';
-import { formatOutageMessage } from '../utils/messageFormatter.js';
 import { getHouseDataFromResponse } from '../helpers.js';
 import { fetchDTEKCurrentInfo, fetchPowerInfo } from '../request.js';
 import { CONFIG } from '../config.js';
