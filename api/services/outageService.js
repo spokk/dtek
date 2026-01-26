@@ -1,6 +1,6 @@
 import { withRetry } from '../utils/httpClient.js';
 import { getCurrentDateKyiv } from '../utils/dateUtils.js';
-import { parsePowerResponse, getPowerCityStats } from '../utils/powerUtils.js';
+import { parsePowerResponse, getPowerCitiesStats } from '../utils/powerUtils.js';
 import { getHouseDataFromResponse } from '../helpers.js';
 import { fetchDTEKCurrentInfo, fetchPowerInfo } from '../request.js';
 import { CONFIG } from '../config.js';
@@ -18,7 +18,9 @@ export async function fetchOutageData() {
 
   const entries = parsePowerResponse(powerResponse);
 
-  const powerStats = getPowerCityStats(process.env.POWER_CITY, entries);
+  const cities = process.env.POWER_CITIES ? process.env.POWER_CITIES.split(',') : [];
+
+  const powerStats = getPowerCitiesStats(cities, entries);
 
   console.log('Power statistics computed:', JSON.stringify(powerStats, null, 2));
 

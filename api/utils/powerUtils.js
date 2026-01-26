@@ -78,12 +78,18 @@ export function calculateLightPercent(entries = []) {
   return Math.round((on / entries.length) * 10000) / 100;
 }
 
-export function getPowerCityStats(cityName, entries) {
-  if (!cityName || !entries?.length) return '';
+export function getPowerCitiesStats(cityNames, entries) {
+  if (!Array.isArray(cityNames) || !cityNames.length) return null;
+  if (!entries?.length) return null;
 
-  const cityEntries = filterCity(entries, cityName);
-  if (!cityEntries.length) return '';
+  const allCityEntries = entries.filter(e =>
+    e.city && cityNames.some(city => city.toLowerCase().trim() === e.city.toLowerCase().trim())
+  );
 
-  const lightPercent = calculateLightPercent(cityEntries);
-  return `${cityName} має світло приблизно у ${lightPercent}% місць.`;
+  if (!allCityEntries.length) return null;
+
+  const lightPercent = calculateLightPercent(allCityEntries);
+  const region = process.env.POWER_REGION || 'Регіон';
+
+  return `${region} заживлено на ${lightPercent}%.`;
 }
