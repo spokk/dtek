@@ -11,7 +11,7 @@ export const checkImageExists = async (url) => {
 export const withRetry = async (fn, maxRetries = 10) => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`Attempt ${attempt} of ${maxRetries}`);
+      console.log(`Attempt ${fn.name} #${attempt} of ${maxRetries}`);
       return await fn();
     } catch (error) {
       console.error(`Error on attempt ${attempt}:`, error.message);

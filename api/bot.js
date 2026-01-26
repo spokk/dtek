@@ -1,12 +1,10 @@
 import 'dotenv/config';
 import { Telegraf } from 'telegraf';
 
-import { checkImageExists, withRetry } from './utils/httpClient.js';
-import { formatDTEKMessage } from './utils/messageFormatter.js';
-import { getCurrentDateKyiv } from './utils/dateUtils.js';
+import { checkImageExists } from './utils/httpClient.js';
+import { fetchOutageData, formatOutageCaption, getTodayImageURL } from './services/outageService.js';
 
 import { CONFIG } from './config.js';
-import { fetchDTEKData, getHouseDataFromResponse } from './helpers.js';
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
@@ -14,25 +12,14 @@ bot.command('dtek', async (ctx) => {
   try {
     console.log('DTEK command started');
 
-    const currentDate = getCurrentDateKyiv();
-
-    console.log('Current Kyiv date:', currentDate);
-
-    const dtekResponse = await withRetry(() => fetchDTEKData(currentDate));
-
-    console.log('Retrieved DTEK data:', JSON.stringify(dtekResponse, null, 2));
-
-    const houseData = getHouseDataFromResponse(dtekResponse, process.env.DTEK_HOUSE);
-
-    console.log('House data retrieved:', JSON.stringify(houseData, null, 2));
+    const { dtekResponse, houseData, powerStats, currentDate } = await fetchOutageData();
 
     if (!houseData) {
       return ctx.reply(CONFIG.MESSAGES.NO_INFO);
     }
 
-    const caption = formatDTEKMessage(dtekResponse, houseData, process.env.DTEK_STREET, currentDate);
-    const todayImgURL = `${CONFIG.TODAY_IMAGE_URL}?v=${Date.now()}`;
-
+    const caption = formatOutageCaption(dtekResponse, houseData, powerStats, currentDate);
+    const todayImgURL = getTodayImageURL();
     const imageExists = await checkImageExists(todayImgURL);
 
     if (imageExists) {
@@ -42,7 +29,6 @@ bot.command('dtek', async (ctx) => {
     }
   } catch (err) {
     console.error('DTEK command error:', err);
-
     return ctx.reply(CONFIG.MESSAGES.ERROR);
   }
 });

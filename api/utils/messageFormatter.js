@@ -76,33 +76,40 @@ const buildScheduleBlocks = (todayUNIX, tomorrowUNIX, hoursDataToday, hoursDataT
   return blocks;
 };
 
-const buildNoOutageMessage = (street, houseGroup, scheduleBlocks, updateTimestamp) => {
-  return [
+const buildNoOutageMessage = (street, houseGroup, scheduleBlocks, powerStats, updateTimestamp) => {
+  const messageParts = [
     `Інформація про відключення на ${street} (${houseGroup}) відсутня.`,
     `Якщо в даний момент у вас відсутнє світло, імовірно виникла аварійна ситуація, або діють стабілізаційні або екстрені відключення.`,
     ...scheduleBlocks,
+    powerStats ? powerStats : '',
     `Дата оновлення інформації: ${updateTimestamp}`,
-  ].join('\n\n');
+  ];
+
+  return messageParts.join('\n\n');
 };
 
-const buildOutageMessage = (street, houseGroup, house, currentDate, scheduleBlocks, updateTimestamp) => {
+const buildOutageMessage = (street, houseGroup, house, currentDate, scheduleBlocks, powerStats, updateTimestamp) => {
   const timeSince = calculateTimeDifference(house.start_date, currentDate) || 'Невідомо';
   const timeUntil = calculateTimeDifference(house.end_date, currentDate) || 'Невідомо';
 
-  return [
+  const messageParts = [
     `За адресою ${street} (${houseGroup}) зафіксовано: \n${house.sub_type}`,
     `Початок: ${house.start_date}\nКінець: ${house.end_date}`,
     `Без світла: ${timeSince}\nДо відновлення залишилось: ${timeUntil}`,
     ...scheduleBlocks,
+    powerStats ? powerStats : '',
     `Дата оновлення інформації: ${updateTimestamp}`,
-  ].join('\n\n');
+  ];
+
+  return messageParts.join('\n\n');
 };
 
-export const formatDTEKMessage = (
+export const formatOutageMessage = (
   dtekResponse = {},
   houseData,
   street,
   currentDate,
+  powerStats
 ) => {
   const { updateTimestamp, fact, preset } = dtekResponse;
   const reasonKey = houseData?.sub_type_reason?.[0];
@@ -117,7 +124,7 @@ export const formatDTEKMessage = (
     const scheduleBlocks = [];
 
     if (!outageExists) {
-      return buildNoOutageMessage(street, houseGroup, scheduleBlocks, updateTimestamp);
+      return buildNoOutageMessage(street, houseGroup, scheduleBlocks, powerStats, updateTimestamp);
     }
     return buildOutageMessage(
       street,
@@ -125,7 +132,8 @@ export const formatDTEKMessage = (
       houseData,
       currentDate,
       scheduleBlocks,
-      updateTimestamp
+      powerStats,
+      updateTimestamp,
     );
   }
 
@@ -144,7 +152,7 @@ export const formatDTEKMessage = (
 
   // Return appropriate message based on outage period
   if (!hasOutagePeriod(houseData)) {
-    return buildNoOutageMessage(street, houseGroup, scheduleBlocks, updateTimestamp);
+    return buildNoOutageMessage(street, houseGroup, scheduleBlocks, powerStats, updateTimestamp);
   }
 
   return buildOutageMessage(
@@ -153,6 +161,7 @@ export const formatDTEKMessage = (
     houseData,
     currentDate,
     scheduleBlocks,
-    updateTimestamp
+    powerStats,
+    updateTimestamp,
   );
 };
