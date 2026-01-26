@@ -1,35 +1,58 @@
-export function parsePowerRow(row) {
-  const fields = row.split(';&&&;');
+const FIELD_INDEX = {
+  LIGHT_RAW: 1,
+  TIMESTAMP: 2,
+  LOCATION: 3,
+  PEOPLE: 5,
+  LAT: 6,
+  LON: 7
+};
 
-  if (fields.length < 10) return null;
+function parseLightStatus(value) {
+  if (value === 1) return 1; // power on
+  if (value === 2) return 0; // power off
+  return null;
+}
 
-  const timestamp = new Date(fields[2]);
-  let locationRaw = fields[3] || '';
+function parseLocation(locationRaw) {
+  if (!locationRaw) return null;
 
-  let [city, address] = locationRaw.includes('->')
-    ? locationRaw.split('->').map(s => s.trim())
-    : [locationRaw.trim() || null, null];
+  const parts = locationRaw.split('->');
+  const city = parts[0]?.replace(/^с\. ?/i, '').trim();
 
   if (!city) return null;
 
-  city = city.replace(/^с\. ?/i, '').trim();
-
-  const peopleCount = Number(fields[5]);
-  const lat = Number(fields[6]);
-  const lon = Number(fields[7]);
-  const lightStatus = Number(fields[8]);
-
   return {
     city,
-    address: address || null,
-    timestamp: isNaN(timestamp.getTime()) ? null : timestamp,
+    address: parts[1]?.trim() || null
+  };
+}
+
+export function parsePowerRow(row) {
+  if (!row) return null;
+
+  const fields = row.split(';&&&;');
+  if (fields.length < 6) return null;
+
+  const location = parseLocation(fields[FIELD_INDEX.LOCATION]);
+  if (!location) return null;
+
+  const timestamp = new Date(fields[FIELD_INDEX.TIMESTAMP]);
+  const peopleCount = Number(fields[FIELD_INDEX.PEOPLE]);
+  const lat = Number(fields[FIELD_INDEX.LAT]);
+  const lon = Number(fields[FIELD_INDEX.LON]);
+
+  return {
+    city: location.city,
+    address: location.address,
+    timestamp: Number.isNaN(timestamp.getTime()) ? null : timestamp,
     peopleCount: Number.isFinite(peopleCount) ? peopleCount : null,
-    lightStatus: [0, 1, 2].includes(lightStatus) ? lightStatus : null,
+    lightStatus: parseLightStatus(Number(fields[FIELD_INDEX.LIGHT_RAW])),
     lat: Number.isFinite(lat) ? lat : null,
     lon: Number.isFinite(lon) ? lon : null,
     raw: row
   };
 }
+
 
 export function parsePowerResponse(rawText) {
   return rawText
