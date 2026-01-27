@@ -26,9 +26,9 @@ bot.command('dtek', async (ctx) => {
     console.log('Caption: \n', caption);
 
     if (imageExists) {
-      return ctx.replyWithPhoto(todayImgURL, { caption });
+      return ctx.replyWithPhoto(todayImgURL, { caption, parse_mode: 'HTML' });
     } else {
-      return ctx.reply(caption);
+      return ctx.reply(caption, { parse_mode: 'HTML' });
     }
   } catch (err) {
     console.error('DTEK command error:', err);

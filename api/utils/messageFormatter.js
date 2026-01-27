@@ -12,27 +12,36 @@ export const formatScheduleText = (hoursData, timeZone, timeType) => {
 
   const segments = [];
 
+  const STATUS_ICON = {
+    yes: "🟢",
+    no: "🔴",
+    first: "🔴",
+    second: "🟢",
+    mfirst: "🟡",
+    msecond: "🟡",
+  };
+
   const addSegment = (from, to, status) => {
     if (!from || !to || !status) return;
     segments.push({ from, to, status });
   };
 
-  Object.keys(hoursData).sort((a, b) => a - b).forEach(h => {
-    const status = hoursData[h];
-    const [, start, end] = timeZone[h];
+  Object.keys(hoursData)
+    .sort((a, b) => a - b)
+    .forEach(h => {
+      const status = hoursData[h];
+      const [, start, end] = timeZone[h];
 
-    if (status === "first") {
-      addSegment(start, start.replace(":00", ":30"), "no");
-      addSegment(start.replace(":00", ":30"), end, "yes");
-    } else if (status === "second") {
-      addSegment(start, start.replace(":00", ":30"), "yes");
-      addSegment(start.replace(":00", ":30"), end, "no");
-    } else if (status === "mfirst" || status === "msecond") {
-      addSegment(start, end, status);
-    } else {
-      addSegment(start, end, status);
-    }
-  });
+      if (status === "first") {
+        addSegment(start, start.replace(":00", ":30"), "no");
+        addSegment(start.replace(":00", ":30"), end, "yes");
+      } else if (status === "second") {
+        addSegment(start, start.replace(":00", ":30"), "yes");
+        addSegment(start.replace(":00", ":30"), end, "no");
+      } else {
+        addSegment(start, end, status);
+      }
+    });
 
   // Merge adjacent segments with same status
   const merged = [];
@@ -46,7 +55,10 @@ export const formatScheduleText = (hoursData, timeZone, timeType) => {
   }
 
   return merged
-    .map(s => `• ${s.from} – ${s.to} — ${timeType[s.status]}`)
+    .map(s => {
+      const icon = STATUS_ICON[s.status] ?? "🟡";
+      return `${icon} ${s.from} – ${s.to} — ${timeType[s.status]}`;
+    })
     .join("\n");
 };
 
@@ -64,11 +76,11 @@ const buildScheduleBlocks = (todayUNIX, tomorrowUNIX, hoursDataToday, hoursDataT
   );
 
   const blocks = [
-    `Графік відключень на ${toKyivDayMonth(todayUNIX)}:\n${scheduleToday}`,
+    `<b>🗓 Графік відключень на ${toKyivDayMonth(todayUNIX)}:</b>\n${scheduleToday}`,
   ];
 
   if (hoursDataTomorrow) {
-    blocks.push(`Графік відключень на ${toKyivDayMonth(tomorrowUNIX)}:\n${scheduleTomorrow}`);
+    blocks.push(`<b>🗓 Графік відключень на ${toKyivDayMonth(tomorrowUNIX)}:</b>\n${scheduleTomorrow}`);
   }
 
   return blocks;
@@ -76,11 +88,11 @@ const buildScheduleBlocks = (todayUNIX, tomorrowUNIX, hoursDataToday, hoursDataT
 
 const buildNoOutageMessage = (street, houseGroup, scheduleBlocks, powerStats, updateTimestamp) => {
   const messageParts = [
-    `Інформація про відключення на ${street} (${houseGroup}) відсутня.`,
-    `Якщо в даний момент у вас відсутнє світло, імовірно виникла аварійна ситуація, або діють стабілізаційні або екстрені відключення.`,
+    `⚡️<b>Статус електропостачання\n📍${street} [<i>${houseGroup}</i>]</b>`,
+    `ℹ️ Якщо в даний момент у вас відсутнє світло, імовірно виникла аварійна ситуація, або діють стабілізаційні або екстрені відключення.`,
     ...scheduleBlocks,
     ...(powerStats ? [powerStats] : []),
-    `Дата оновлення інформації: ${updateTimestamp}`,
+    `<i>⏱ Оновлено: ${updateTimestamp}</i>`,
   ];
 
   return messageParts.join('\n\n');
@@ -91,12 +103,13 @@ const buildOutageMessage = (street, houseGroup, house, currentDate, scheduleBloc
   const timeUntil = calculateTimeDifference(house.end_date, currentDate) || 'Невідомо';
 
   const messageParts = [
-    `За адресою ${street} (${houseGroup}) зафіксовано: \n${house.sub_type}`,
-    `Початок: ${house.start_date}\nКінець: ${house.end_date}`,
-    `Без світла: ${timeSince}\nДо відновлення залишилось: ${timeUntil}`,
+    `🚨<b>Відключення електропостачання\n📍${street} [<i>${houseGroup}</i>]</b>`,
+    `❗️<b>Тип відключення:</b> ${house.sub_type}`,
+    `🕒 <b>Період відключення</b>\nПочаток: ${house.start_date}\nКінець: ${house.end_date}`,
+    `⛔️ <b>Без світла:</b> ${timeSince}\n🔌 <b>До відновлення:</b> ${timeUntil}`,
     ...scheduleBlocks,
     ...(powerStats ? [powerStats] : []),
-    `Дата оновлення інформації: ${updateTimestamp}`,
+    `<i>⏱ Оновлено: ${updateTimestamp}</i>`,
   ];
 
   return messageParts.join('\n\n');
