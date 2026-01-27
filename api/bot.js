@@ -13,18 +13,17 @@ bot.command('dtek', async (ctx) => {
   try {
     console.log('DTEK command started');
 
-    const { dtekResponse, houseData, powerStats, currentDate } = await fetchOutageData();
+    await ctx.sendChatAction('find_location');
 
-    if (!houseData) {
-      return ctx.reply(CONFIG.MESSAGES.NO_INFO);
-    }
+    const { dtekResponse, houseData, powerStats, currentDate } = await fetchOutageData();
 
     const caption = formatOutageMessage(dtekResponse, houseData, currentDate, powerStats);
     const todayImgURL = getTodayImageURL();
+
     const imageExists = await checkImageExists(todayImgURL);
 
     console.log('DTEK command completed, sending response');
-    console.log('Caption:', caption);
+    console.log('Caption: \n', caption);
 
     if (imageExists) {
       return ctx.replyWithPhoto(todayImgURL, { caption });
