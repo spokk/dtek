@@ -75,24 +75,27 @@ const buildScheduleBlocks = (todayUNIX, tomorrowUNIX, hoursDataToday, hoursDataT
     preset?.time_type
   );
 
-  const blocks = [
-    `<b>🗓 Графік відключень на ${toKyivDayMonth(todayUNIX)}:</b>\n${scheduleToday}`,
-  ];
+  const blocks = [`<b>🗓 Графік відключень на ${toKyivDayMonth(todayUNIX)}:</b>\n${scheduleToday}`];
 
-  if (hoursDataTomorrow) {
-    blocks.push(`<b>🗓 Графік відключень на ${toKyivDayMonth(tomorrowUNIX)}:</b>\n${scheduleTomorrow}`);
+  // Determine if tomorrow has any outage (any segment not "yes")
+  const hasOutageTomorrow = hoursDataTomorrow
+    && Object.values(hoursDataTomorrow).some(status => status !== "yes");
+
+  if (hasOutageTomorrow) {
+    blocks.push(
+      `<b>🗓 Графік відключень на ${toKyivDayMonth(tomorrowUNIX)}:</b>\n${scheduleTomorrow}`
+    );
   }
 
   return blocks;
 };
-
 const buildNoOutageMessage = (street, houseGroup, scheduleBlocks, powerStats, updateTimestamp) => {
   const messageParts = [
-    `⚡️<b>Статус електропостачання\n📍${street} [<i>${houseGroup}</i>]</b>`,
-    `⚠️Якщо в даний момент у вас відсутнє світло, імовірно виникла аварійна ситуація, або діють стабілізаційні або екстрені відключення.`,
+    `⚡️ <b>Статус електропостачання: 📍${street} | ${houseGroup}</b>`,
+    `⚠️ Якщо в даний момент у вас відсутнє світло, імовірно виникла аварійна ситуація, або діють стабілізаційні або екстрені відключення.`,
     ...scheduleBlocks,
     ...(powerStats ? [powerStats] : []),
-    `<i>🕒Оновлено: ${updateTimestamp}</i>`,
+    `🕒 Оновлено: <i>${updateTimestamp}</i>`,
   ];
 
   return messageParts.join('\n\n');
@@ -103,13 +106,13 @@ const buildOutageMessage = (street, houseGroup, house, currentDate, scheduleBloc
   const timeUntil = calculateTimeDifference(house.end_date, currentDate) || 'Невідомо';
 
   const messageParts = [
-    `🚨<b>Відключення електропостачання\n📍${street} [<i>${houseGroup}</i>]</b>`,
-    `❗️<b>Тип відключення:</b> ${house.sub_type}`,
-    `🔦 <b>Час без світла</b>\n🪫 Вимкнення: ${house.start_date}\n🔋 Відновлення: ${house.end_date}`,
+    `🚨 <b>Відключення електропостачання: 📍${street} | ${houseGroup}</b>`,
+    `❗️ <b>Тип відключення:</b> ${house.sub_type}`,
+    `🪫 <b>Вимкнення:</b> ${house.start_date}\n🔋 <b>Відновлення:</b> ${house.end_date}`,
     `⛔️ <b>Без світла:</b> ${timeSince}\n🔌 <b>До відновлення:</b> ${timeUntil}`,
     ...scheduleBlocks,
     ...(powerStats ? [powerStats] : []),
-    `<i>🕒Оновлено: ${updateTimestamp}</i>`,
+    `🕒 Оновлено: <i>${updateTimestamp}</i>`,
   ];
 
   return messageParts.join('\n\n');

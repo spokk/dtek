@@ -91,5 +91,5 @@ export function getPowerCitiesStats(cityNames, entries) {
   const lightPercent = calculateLightPercent(allCityEntries);
   const region = process.env.POWER_REGION || 'Регіон';
 
-  return `<b>📊${region}:</b> ${lightPercent}% з електропостачанням`;
+  return `<b>📊 ${region}:</b> ${lightPercent}% з електропостачанням`;
 }
