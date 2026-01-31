@@ -1,9 +1,9 @@
 import "dotenv/config";
 import { Telegraf } from "telegraf";
 
-import { getTodayImageURL, checkImageExists } from "./infrastructure/imageService.js";
-import { getOutageData } from "./services/outageService.js";
-import { formatOutageMessage } from "./presentation/messageBuilder.js";
+import { getTodayImageURL, checkImageExists } from "../src/infrastructure/imageService.js";
+import { getOutageData } from "../src/services/outageService.js";
+import { formatOutageMessage } from "../src/presentation/messageBuilder.js";
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
