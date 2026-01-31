@@ -15,12 +15,16 @@ bot.command("dtek", async (ctx) => {
 
     await ctx.sendChatAction("find_location");
 
-    const { dtekResponse, houseData, powerStats, currentDate } = await fetchOutageData();
-
-    const caption = formatOutageMessage(dtekResponse, houseData, currentDate, powerStats);
     const todayImgURL = getTodayImageURL();
 
-    const imageExists = await checkImageExists(todayImgURL);
+    const [outageData, imageExists] = await Promise.all([
+      fetchOutageData(),
+      checkImageExists(todayImgURL),
+    ]);
+
+    const { dtekResponse, houseData, powerStats, currentDate } = outageData;
+
+    const caption = formatOutageMessage(dtekResponse, houseData, currentDate, powerStats);
 
     console.log("DTEK command completed, sending response");
     console.log("Caption: \n", caption);
