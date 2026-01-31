@@ -4,7 +4,7 @@ const FIELD_INDEX = {
   LOCATION: 3,
   PEOPLE: 5,
   LAT: 6,
-  LON: 7
+  LON: 7,
 };
 
 function parseLightStatus(value) {
@@ -16,21 +16,21 @@ function parseLightStatus(value) {
 function parseLocation(locationRaw) {
   if (!locationRaw) return null;
 
-  const parts = locationRaw.split('->');
-  const city = parts[0]?.replace(/^с\. ?/i, '').trim();
+  const parts = locationRaw.split("->");
+  const city = parts[0]?.replace(/^с\. ?/i, "").trim();
 
   if (!city) return null;
 
   return {
     city,
-    address: parts[1]?.trim() || null
+    address: parts[1]?.trim() || null,
   };
 }
 
 export function parsePowerRow(row) {
   if (!row) return null;
 
-  const fields = row.split(';&&&;');
+  const fields = row.split(";&&&;");
   if (fields.length < 6) return null;
 
   const location = parseLocation(fields[FIELD_INDEX.LOCATION]);
@@ -49,31 +49,28 @@ export function parsePowerRow(row) {
     lightStatus: parseLightStatus(Number(fields[FIELD_INDEX.LIGHT_RAW])),
     lat: Number.isFinite(lat) ? lat : null,
     lon: Number.isFinite(lon) ? lon : null,
-    raw: row
+    raw: row,
   };
 }
 
-
 export function parsePowerResponse(rawText) {
-  return rawText
-    .trim()
-    .split('\n')
-    .map(parsePowerRow)
-    .filter(Boolean);
+  if (typeof rawText !== "string") {
+    console.warn("parsePowerResponse: expected string, got:", rawText);
+    return [];
+  }
+
+  return rawText.trim().split("\n").map(parsePowerRow).filter(Boolean);
 }
 
 export function filterCity(entries, cityName) {
   const nameLower = cityName.toLowerCase();
-  return entries.filter(e => e.city?.toLowerCase() === nameLower);
+  return entries.filter((e) => e.city?.toLowerCase() === nameLower);
 }
 
 export function calculateLightPercent(entries = []) {
   if (!entries.length) return 0;
 
-  const on = entries.reduce(
-    (sum, e) => sum + (e.lightStatus === 1),
-    0
-  );
+  const on = entries.reduce((sum, e) => sum + (e.lightStatus === 1), 0);
 
   return Math.round((on / entries.length) * 10000) / 100;
 }
@@ -82,14 +79,18 @@ export function getPowerCitiesStats(cityNames, entries) {
   if (!Array.isArray(cityNames) || !cityNames.length) return null;
   if (!entries?.length) return null;
 
-  const allCityEntries = entries.filter(e =>
-    e.city && cityNames.some(city => city.toLowerCase().trim() === e.city.toLowerCase().trim())
+  const allCityEntries = entries.filter(
+    (e) =>
+      e.city &&
+      cityNames.some(
+        (city) => city.toLowerCase().trim() === e.city.toLowerCase().trim(),
+      ),
   );
 
   if (!allCityEntries.length) return null;
 
   const lightPercent = calculateLightPercent(allCityEntries);
-  const region = process.env.POWER_REGION || 'Регіон';
+  const region = process.env.POWER_REGION || "Регіон";
 
   return `<b>📊 ${region}:</b> ${lightPercent}% з електропостачанням`;
 }

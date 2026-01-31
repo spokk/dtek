@@ -1,7 +1,9 @@
 export const getHouseDataFromResponse = (json, houseNumber) => {
   if (!json?.data) {
-    console.error('API Response structure:', JSON.stringify(json, null, 2));
-    throw new Error(`Invalid API response: missing data field. Response keys: ${json ? Object.keys(json).join(', ') : 'null'}`);
+    console.error("API Response structure:", JSON.stringify(json, null, 2));
+    throw new Error(
+      `Invalid API response: missing data field. Response keys: ${json ? Object.keys(json).join(", ") : "null"}`,
+    );
   }
 
   const house = json.data[houseNumber];
@@ -15,7 +17,7 @@ export const getHouseDataFromResponse = (json, houseNumber) => {
 
 export const extractTodayUNIX = (fact) => {
   let todayUNIX = fact?.today;
-  if (typeof todayUNIX === 'string') {
+  if (typeof todayUNIX === "string") {
     todayUNIX = parseInt(todayUNIX, 10);
   }
   return Number.isInteger(todayUNIX) && todayUNIX > 0 ? todayUNIX : null;
@@ -23,7 +25,7 @@ export const extractTodayUNIX = (fact) => {
 
 export const getHouseGroup = (houseData, preset) => {
   const reasonKey = houseData?.sub_type_reason?.[0];
-  return preset?.sch_names?.[reasonKey] || reasonKey?.slice(-3) || 'Невідомо';
+  return preset?.sch_names?.[reasonKey] || reasonKey?.slice(-3) || "Невідомо";
 };
 
 export const getHoursData = (fact, reasonKey, dayUNIX) => {

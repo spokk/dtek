@@ -1,34 +1,76 @@
-import { withRetry } from '../utils/httpClient.js';
-import { getCurrentDateKyiv } from '../utils/dateUtils.js';
-import { parsePowerResponse, getPowerCitiesStats } from '../utils/powerUtils.js';
-import { getHouseDataFromResponse } from '../helpers.js';
-import { fetchDTEKCurrentInfo, fetchPowerInfo } from '../request.js';
-import { CONFIG } from '../config.js';
+import { withRetry } from "../utils/httpClient.js";
+import { getCurrentDateKyiv } from "../utils/dateUtils.js";
+import {
+  parsePowerResponse,
+  getPowerCitiesStats,
+} from "../utils/powerUtils.js";
+import { getHouseDataFromResponse } from "../helpers.js";
+import { fetchDTEKCurrentInfo, fetchPowerInfo } from "../request.js";
+import { CONFIG } from "../config.js";
 
 export async function fetchOutageData() {
-  console.log('Outage data fetch started');
+  console.log("[fetchOutageData] Started");
 
   const currentDate = getCurrentDateKyiv();
-  console.log('Current Kyiv date:', currentDate);
+  console.log("[fetchOutageData] Current Kyiv date:", currentDate);
 
-  const [scheduleData, powerResponse] = await Promise.all([
-    withRetry(() => fetchDTEKCurrentInfo(currentDate), 10, 'fetchDTEKCurrentInfo'),
-    withRetry(() => fetchPowerInfo(), 10, 'fetchPowerInfo')
+  const [dtekResult, powerInfoResult] = await Promise.allSettled([
+    withRetry(
+      () => fetchDTEKCurrentInfo(currentDate),
+      10,
+      "fetchDTEKCurrentInfo",
+    ),
+    withRetry(fetchPowerInfo, 3, "fetchPowerInfo"),
   ]);
 
-  const entries = parsePowerResponse(powerResponse);
+  // ❗ DTEK — критичний
+  if (dtekResult.status !== "fulfilled") {
+    console.error("[fetchOutageData] DTEK fetch failed:", dtekResult.reason);
+    throw dtekResult.reason;
+  }
 
-  const cities = process.env.POWER_CITIES ? process.env.POWER_CITIES.split(',') : [];
+  const dtekResponse = dtekResult.value;
 
-  const powerStats = getPowerCitiesStats(cities, entries);
+  // ⚠️ PowerInfo — опціональний
+  const powerEntries =
+    powerInfoResult.status === "fulfilled"
+      ? parsePowerResponse(powerInfoResult.value)
+      : [];
 
-  console.log('Power statistics computed:', JSON.stringify(powerStats, null, 2));
+  if (powerInfoResult.status !== "fulfilled") {
+    console.warn(
+      "[fetchOutageData] PowerInfo unavailable:",
+      powerInfoResult.reason?.message,
+    );
+  }
 
-  const houseData = getHouseDataFromResponse(scheduleData, process.env.DTEK_HOUSE);
+  const cities = (process.env.POWER_CITIES ?? "")
+    .split(",")
+    .map((c) => c.trim())
+    .filter(Boolean);
 
-  console.log('House data retrieved:', JSON.stringify(houseData, null, 2));
+  const powerStats = getPowerCitiesStats(cities, powerEntries);
+  console.log(
+    "[fetchOutageData] Power statistics:",
+    JSON.stringify(powerStats, null, 2),
+  );
 
-  return { dtekResponse: scheduleData, houseData, powerStats, currentDate };
+  const houseData = getHouseDataFromResponse(
+    dtekResponse,
+    process.env.DTEK_HOUSE,
+  );
+
+  console.log(
+    "[fetchOutageData] House data:",
+    JSON.stringify(houseData, null, 2),
+  );
+
+  return {
+    dtekResponse,
+    houseData,
+    powerStats,
+    currentDate,
+  };
 }
 
 export function getTodayImageURL() {

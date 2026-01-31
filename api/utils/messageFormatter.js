@@ -2,10 +2,14 @@ import {
   extractTodayUNIX,
   getHouseGroup,
   getHoursData,
-  hasOutagePeriod
-} from '../helpers.js';
+  hasOutagePeriod,
+} from "../helpers.js";
 
-import { add24Hours, calculateTimeDifference, toKyivDayMonth } from './dateUtils.js';
+import {
+  add24Hours,
+  calculateTimeDifference,
+  toKyivDayMonth,
+} from "./dateUtils.js";
 
 export const formatScheduleText = (hoursData, timeZone, timeType) => {
   if (!hoursData || !timeZone || !timeType) return "";
@@ -28,7 +32,7 @@ export const formatScheduleText = (hoursData, timeZone, timeType) => {
 
   Object.keys(hoursData)
     .sort((a, b) => a - b)
-    .forEach(h => {
+    .forEach((h) => {
       const status = hoursData[h];
       const [, start, end] = timeZone[h];
 
@@ -55,41 +59,56 @@ export const formatScheduleText = (hoursData, timeZone, timeType) => {
   }
 
   return merged
-    .map(s => {
+    .map((s) => {
       const icon = STATUS_ICON[s.status] ?? "🟡";
       return `${icon} ${s.from} – ${s.to} — ${timeType[s.status]}`;
     })
     .join("\n");
 };
 
-const buildScheduleBlocks = (todayUNIX, tomorrowUNIX, hoursDataToday, hoursDataTomorrow, preset) => {
+const buildScheduleBlocks = (
+  todayUNIX,
+  tomorrowUNIX,
+  hoursDataToday,
+  hoursDataTomorrow,
+  preset,
+) => {
   const scheduleToday = formatScheduleText(
     hoursDataToday,
     preset?.time_zone,
-    preset?.time_type
+    preset?.time_type,
   );
 
   const scheduleTomorrow = formatScheduleText(
     hoursDataTomorrow,
     preset?.time_zone,
-    preset?.time_type
+    preset?.time_type,
   );
 
-  const blocks = [`<b>🗓 Графік відключень на ${toKyivDayMonth(todayUNIX)}:</b>\n${scheduleToday}`];
+  const blocks = [
+    `<b>🗓 Графік відключень на ${toKyivDayMonth(todayUNIX)}:</b>\n${scheduleToday}`,
+  ];
 
   // Determine if tomorrow has any outage (any segment not "yes")
-  const hasOutageTomorrow = hoursDataTomorrow
-    && Object.values(hoursDataTomorrow).some(status => status !== "yes");
+  const hasOutageTomorrow =
+    hoursDataTomorrow &&
+    Object.values(hoursDataTomorrow).some((status) => status !== "yes");
 
   if (hasOutageTomorrow) {
     blocks.push(
-      `<b>🗓 Графік відключень на ${toKyivDayMonth(tomorrowUNIX)}:</b>\n${scheduleTomorrow}`
+      `<b>🗓 Графік відключень на ${toKyivDayMonth(tomorrowUNIX)}:</b>\n${scheduleTomorrow}`,
     );
   }
 
   return blocks;
 };
-const buildNoOutageMessage = (street, houseGroup, scheduleBlocks, powerStats, updateTimestamp) => {
+const buildNoOutageMessage = (
+  street,
+  houseGroup,
+  scheduleBlocks,
+  powerStats,
+  updateTimestamp,
+) => {
   const messageParts = [
     `⚡️ <b>Статус електропостачання: 📍${street} | ${houseGroup}</b>`,
     `⚠️ Якщо в даний момент у вас відсутнє світло, імовірно виникла аварійна ситуація, або діють стабілізаційні або екстрені відключення.`,
@@ -98,12 +117,22 @@ const buildNoOutageMessage = (street, houseGroup, scheduleBlocks, powerStats, up
     `🕒 Оновлено: <i>${updateTimestamp}</i>`,
   ];
 
-  return messageParts.join('\n\n');
+  return messageParts.join("\n\n");
 };
 
-const buildOutageMessage = (street, houseGroup, house, currentDate, scheduleBlocks, powerStats, updateTimestamp) => {
-  const timeSince = calculateTimeDifference(house.start_date, currentDate) || 'Невідомо';
-  const timeUntil = calculateTimeDifference(house.end_date, currentDate) || 'Невідомо';
+const buildOutageMessage = (
+  street,
+  houseGroup,
+  house,
+  currentDate,
+  scheduleBlocks,
+  powerStats,
+  updateTimestamp,
+) => {
+  const timeSince =
+    calculateTimeDifference(house.start_date, currentDate) || "Невідомо";
+  const timeUntil =
+    calculateTimeDifference(house.end_date, currentDate) || "Невідомо";
 
   const messageParts = [
     `🚨 <b>Відключення електропостачання: 📍${street} | ${houseGroup}</b>`,
@@ -115,14 +144,14 @@ const buildOutageMessage = (street, houseGroup, house, currentDate, scheduleBloc
     `🕒 Оновлено: <i>${updateTimestamp}</i>`,
   ];
 
-  return messageParts.join('\n\n');
+  return messageParts.join("\n\n");
 };
 
 export const formatOutageMessage = (
   dtekResponse = {},
   houseData,
   currentDate,
-  powerStats
+  powerStats,
 ) => {
   const street = process.env.DTEK_STREET;
   const { updateTimestamp, fact, preset } = dtekResponse;
@@ -133,12 +162,18 @@ export const formatOutageMessage = (
 
   // Handle invalid or missing date
   if (!todayUNIX) {
-    console.warn('Invalid or missing fact.today:', fact?.today);
+    console.warn("Invalid or missing fact.today:", fact?.today);
     const outageExists = hasOutagePeriod(houseData);
     const scheduleBlocks = [];
 
     if (!outageExists) {
-      return buildNoOutageMessage(street, houseGroup, scheduleBlocks, powerStats, updateTimestamp);
+      return buildNoOutageMessage(
+        street,
+        houseGroup,
+        scheduleBlocks,
+        powerStats,
+        updateTimestamp,
+      );
     }
     return buildOutageMessage(
       street,
@@ -161,12 +196,18 @@ export const formatOutageMessage = (
     tomorrowUNIX,
     hoursDataToday,
     hoursDataTomorrow,
-    preset
+    preset,
   );
 
   // Return appropriate message based on outage period
   if (!hasOutagePeriod(houseData)) {
-    return buildNoOutageMessage(street, houseGroup, scheduleBlocks, powerStats, updateTimestamp);
+    return buildNoOutageMessage(
+      street,
+      houseGroup,
+      scheduleBlocks,
+      powerStats,
+      updateTimestamp,
+    );
   }
 
   return buildOutageMessage(

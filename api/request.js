@@ -1,16 +1,17 @@
-import { CONFIG } from './config.js';
+import { CONFIG } from "./config.js";
 
 export const fetchDTEKCurrentInfo = async (currentDate) => {
   const response = await fetch(CONFIG.DTEK_API_URL, {
+    signal: AbortSignal.timeout(1800),
     method: "POST",
-    cache: 'no-store',
+    cache: "no-store",
     headers: {
       ...CONFIG.DTEK_API_HEADERS,
       "x-csrf-token": process.env.DTEK_CSRF_TOKEN,
-      "Cookie": process.env.DTEK_COOKIE,
+      Cookie: process.env.DTEK_COOKIE,
       "Cache-Control": "no-cache, no-store, must-revalidate",
-      "Pragma": "no-cache",
-      "Expires": "0"
+      Pragma: "no-cache",
+      Expires: "0",
     },
     body: new URLSearchParams({
       method: CONFIG.DTEK_API_METHOD,
@@ -19,11 +20,15 @@ export const fetchDTEKCurrentInfo = async (currentDate) => {
       "data[1][name]": "street",
       "data[1][value]": process.env.DTEK_STREET,
       "data[2][name]": "updateFact",
-      "data[2][value]": currentDate
-    })
+      "data[2][value]": currentDate,
+    }),
   });
 
-  console.log('DTEK API response status:', response.status, response.statusText);
+  console.log(
+    "DTEK API response status:",
+    response.status,
+    response.statusText,
+  );
 
   if (!response.ok) {
     throw new Error(`DTEK API returned error: ${response.status}`);
@@ -36,28 +41,35 @@ export const fetchDTEKCurrentInfo = async (currentDate) => {
 
 export const fetchPowerInfo = async () => {
   const response = await fetch(CONFIG.SVITLO_API_URL, {
-    method: 'GET',
-    cache: 'no-store',
+    signal: AbortSignal.timeout(1000),
+    method: "GET",
+    cache: "no-store",
     headers: {
-      'accept': '*/*',
-      'accept-language': 'en,uk;q=0.9',
+      accept: "*/*",
+      "accept-language": "en,uk;q=0.9",
       "Cache-Control": "no-cache, no-store, must-revalidate",
-      'dnt': '1',
-      'origin': 'https://svitlobot.in.ua',
-      'pragma': 'no-cache',
-      'priority': 'u=1, i',
-      'referer': 'https://svitlobot.in.ua/',
-      'sec-ch-ua': '"Not(A:Brand";v="8", "Chromium";v="144", "Google Chrome";v="144"',
-      'sec-ch-ua-mobile': '?0',
-      'sec-ch-ua-platform': '"Windows"',
-      'sec-fetch-dest': 'empty',
-      'sec-fetch-mode': 'cors',
-      'sec-fetch-site': 'same-site',
-      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
-    }
+      dnt: "1",
+      origin: "https://svitlobot.in.ua",
+      pragma: "no-cache",
+      priority: "u=1, i",
+      referer: "https://svitlobot.in.ua/",
+      "sec-ch-ua":
+        '"Not(A:Brand";v="8", "Chromium";v="144", "Google Chrome";v="144"',
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": '"Windows"',
+      "sec-fetch-dest": "empty",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-site": "same-site",
+      "user-agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+    },
   });
 
-  console.log('Svitlobot API response status:', response.status, response.statusText);
+  console.log(
+    "Svitlobot API response status:",
+    response.status,
+    response.statusText,
+  );
 
   if (!response.ok) {
     throw new Error(`Svitlobot API HTTP error ${response.status}`);
@@ -66,4 +78,4 @@ export const fetchPowerInfo = async () => {
   const text = await response.text();
 
   return text;
-}
+};
