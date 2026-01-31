@@ -24,5 +24,8 @@
       ],
       "source": "/api/(.*)"
     }
+  ],
+  "regions": [
+    "fra1"
   ]
 }
