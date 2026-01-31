@@ -86,6 +86,8 @@ export function getPowerCitiesStats(cityNames, entries) {
 
   if (!allCityEntries.length) return null;
 
+  console.log("[getPowerCitiesStats] Filtered entries for cities:", allCityEntries);
+
   const lightPercent = calculateLightPercent(allCityEntries);
   const region = process.env.POWER_REGION || "Регіон";
 

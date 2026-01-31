@@ -1,3 +1,5 @@
+import { CONFIG } from "./config.js";
+
 export const getHouseDataFromResponse = (json, houseNumber) => {
   if (!json?.data) {
     console.error("API Response structure:", JSON.stringify(json, null, 2));
@@ -35,3 +37,7 @@ export const getHoursData = (fact, reasonKey, dayUNIX) => {
 export const hasOutagePeriod = (houseData) => {
   return houseData?.sub_type && (houseData?.start_date || houseData?.end_date);
 };
+
+export function getTodayImageURL() {
+  return `${CONFIG.TODAY_IMAGE_URL}?v=${Date.now()}`;
+}

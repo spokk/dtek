@@ -1,30 +1,37 @@
 import { withRetry } from "../utils/httpClient.js";
 import { getCurrentDateKyiv } from "../utils/dateUtils.js";
 import { parsePowerResponse, getPowerCitiesStats } from "../utils/powerUtils.js";
+
 import { getHouseDataFromResponse } from "../helpers.js";
 import { fetchDTEKCurrentInfo, fetchPowerInfo } from "../request.js";
-import { CONFIG } from "../config.js";
+
+const RETRY_LIMITS = {
+  DTEK: 10,
+  SVITLOBOT: 3,
+};
 
 async function fetchDataSources(currentDate) {
   const [dtekResult, powerInfoResult] = await Promise.allSettled([
-    withRetry(() => fetchDTEKCurrentInfo(currentDate), 10, "fetchDTEKCurrentInfo"),
-    withRetry(fetchPowerInfo, 3, "fetchPowerInfo"),
+    withRetry(() => fetchDTEKCurrentInfo(currentDate), RETRY_LIMITS.DTEK, "fetchDTEKCurrentInfo"),
+    withRetry(fetchPowerInfo, RETRY_LIMITS.SVITLOBOT, "fetchPowerInfo"),
   ]);
 
-  if (dtekResult.status !== "fulfilled") {
-    console.error("[fetchOutageData] DTEK fetch failed:", dtekResult.reason);
-    throw dtekResult.reason;
-  }
-
-  const powerEntries = handlePowerInfoResult(powerInfoResult);
+  validateDTEKResult(dtekResult);
 
   return {
     dtekResponse: dtekResult.value,
-    powerEntries,
+    powerEntries: extractPowerEntries(powerInfoResult),
   };
 }
 
-function handlePowerInfoResult(result) {
+function validateDTEKResult(result) {
+  if (result.status !== "fulfilled") {
+    console.error("[fetchOutageData] DTEK fetch failed:", result.reason);
+    throw result.reason;
+  }
+}
+
+function extractPowerEntries(result) {
   if (result.status === "fulfilled") {
     return parsePowerResponse(result.value);
   }
@@ -35,6 +42,7 @@ function handlePowerInfoResult(result) {
 
 function parseCitiesFromEnv() {
   const citiesEnv = process.env.POWER_CITIES ?? "";
+
   return citiesEnv
     .split(",")
     .map((city) => city.trim())
@@ -62,8 +70,4 @@ export async function fetchOutageData() {
     powerStats,
     currentDate,
   };
-}
-
-export function getTodayImageURL() {
-  return `${CONFIG.TODAY_IMAGE_URL}?v=${Date.now()}`;
 }
