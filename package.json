@@ -30,7 +30,7 @@
     "prettier-config": "^1.0.0"
   },
   "lint-staged": {
-    "**/*.{js,mjs,cjs,ts,tsx}": [
+    "*.{js,mjs,cjs,ts,tsx}": [
       "eslint --fix",
       "prettier --write"
     ]
