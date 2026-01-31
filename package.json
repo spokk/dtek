@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "deploy": "vercel --prod",
-    "eslint": "eslint . --ext .js,.mjs,.cjs,.ts,.tsx --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "prettier": "prettier --write .",
-    "format": "npm run eslint && npm run prettier"
+    "format": "npm run lint:fix && npm run prettier",
+    "prepare": "husky"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
@@ -22,7 +24,15 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
     "globals": "^17.2.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "prettier": "3.8.1",
     "prettier-config": "^1.0.0"
+  },
+  "lint-staged": {
+    "**/*.{js,mjs,cjs,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }
