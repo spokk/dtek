@@ -1,12 +1,9 @@
 import "dotenv/config";
 import { Telegraf } from "telegraf";
 
-import { checkImageExists } from "./utils/httpClient.js";
-import { fetchOutageData } from "./services/outageService.js";
-import { formatOutageMessage } from "./utils/messageFormatter.js";
-
-import { getTodayImageURL } from "./helpers.js";
-import { CONFIG } from "./config.js";
+import { getTodayImageURL, checkImageExists } from "./infrastructure/imageService.js";
+import { getOutageData } from "./services/outageService.js";
+import { formatOutageMessage } from "./presentation/messageBuilder.js";
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
@@ -14,12 +11,12 @@ bot.command("dtek", async (ctx) => {
   try {
     console.log("DTEK command started");
 
-    await ctx.sendChatAction("find_location");
+    await ctx.sendChatAction("typing");
 
     const todayImgURL = getTodayImageURL();
 
     const [outageData, imageExists] = await Promise.all([
-      fetchOutageData(),
+      getOutageData(),
       checkImageExists(todayImgURL),
     ]);
 
@@ -37,7 +34,7 @@ bot.command("dtek", async (ctx) => {
     }
   } catch (err) {
     console.error("DTEK command error:", err);
-    return ctx.reply(CONFIG.MESSAGES.ERROR);
+    return ctx.reply("❌ Сталася помилка при отриманні даних");
   }
 });
 

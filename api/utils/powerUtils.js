@@ -53,15 +53,6 @@ export function parsePowerRow(row) {
   };
 }
 
-export function parsePowerResponse(rawText) {
-  if (typeof rawText !== "string") {
-    console.warn("parsePowerResponse: expected string, got:", rawText);
-    return [];
-  }
-
-  return rawText.trim().split("\n").map(parsePowerRow).filter(Boolean);
-}
-
 export function filterCity(entries, cityName) {
   const nameLower = cityName.toLowerCase();
   return entries.filter((e) => e.city?.toLowerCase() === nameLower);
@@ -85,8 +76,6 @@ export function getPowerCitiesStats(cityNames, entries) {
   );
 
   if (!allCityEntries.length) return null;
-
-  console.log("[getPowerCitiesStats] Filtered entries for cities:", allCityEntries);
 
   const lightPercent = calculateLightPercent(allCityEntries);
   const region = process.env.POWER_REGION || "Регіон";

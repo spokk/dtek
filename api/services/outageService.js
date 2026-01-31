@@ -1,9 +1,11 @@
+import { fetchDTEKOutageData } from "../infrastructure/dtekApi.js";
+import { fetchSvitlobotOutageData } from "../infrastructure/svitlobotApi.js";
+
 import { withRetry } from "../utils/httpClient.js";
 import { getCurrentDateKyiv } from "../utils/dateUtils.js";
-import { parsePowerResponse, getPowerCitiesStats } from "../utils/powerUtils.js";
+import { getPowerCitiesStats, parsePowerRow } from "../utils/powerUtils.js";
 
 import { getHouseDataFromResponse } from "../helpers.js";
-import { fetchDTEKCurrentInfo, fetchPowerInfo } from "../request.js";
 
 const RETRY_LIMITS = {
   DTEK: 10,
@@ -11,36 +13,36 @@ const RETRY_LIMITS = {
 };
 
 async function fetchDataSources(currentDate) {
-  const [dtekResult, powerInfoResult] = await Promise.allSettled([
-    withRetry(() => fetchDTEKCurrentInfo(currentDate), RETRY_LIMITS.DTEK, "fetchDTEKCurrentInfo"),
-    withRetry(fetchPowerInfo, RETRY_LIMITS.SVITLOBOT, "fetchPowerInfo"),
+  const [dtekResult, svitloBotResult] = await Promise.allSettled([
+    withRetry(() => fetchDTEKOutageData(currentDate), RETRY_LIMITS.DTEK, "fetchDTEKOutageData"),
+    withRetry(fetchSvitlobotOutageData, RETRY_LIMITS.SVITLOBOT, "fetchSvitlobotOutageData"),
   ]);
 
   validateDTEKResult(dtekResult);
 
   return {
     dtekResponse: dtekResult.value,
-    powerEntries: extractPowerEntries(powerInfoResult),
+    svitlobotResponse: extractSvitlobotEntries(svitloBotResult),
   };
 }
 
 function validateDTEKResult(result) {
   if (result.status !== "fulfilled") {
-    console.error("[fetchOutageData] DTEK fetch failed:", result.reason);
+    console.error("DTEK data unavailable:", result.reason);
     throw result.reason;
   }
 }
 
-function extractPowerEntries(result) {
-  if (result.status === "fulfilled") {
-    return parsePowerResponse(result.value);
+function extractSvitlobotEntries(result) {
+  if (result.status === "fulfilled" && typeof result.value === "string") {
+    return result.value.trim().split("\n").map(parsePowerRow).filter(Boolean);
   }
 
-  console.warn("[fetchOutageData] PowerInfo unavailable:", result.reason?.message);
+  console.warn("Svitlobot data unavailable:", result.reason?.message);
   return [];
 }
 
-function parseCitiesFromEnv() {
+function getCityNamesFromEnv() {
   const citiesEnv = process.env.POWER_CITIES ?? "";
 
   return citiesEnv
@@ -49,20 +51,16 @@ function parseCitiesFromEnv() {
     .filter(Boolean);
 }
 
-export async function fetchOutageData() {
-  console.log("[fetchOutageData] Started");
-
+export async function getOutageData() {
   const currentDate = getCurrentDateKyiv();
-  console.log("[fetchOutageData] Current Kyiv date:", currentDate);
 
-  const { dtekResponse, powerEntries } = await fetchDataSources(currentDate);
+  const { dtekResponse, svitlobotResponse } = await fetchDataSources(currentDate);
 
-  const cities = parseCitiesFromEnv();
-  const powerStats = getPowerCitiesStats(cities, powerEntries);
-  console.log("[fetchOutageData] Power statistics:", JSON.stringify(powerStats, null, 2));
+  const cityNames = getCityNamesFromEnv();
+
+  const powerStats = getPowerCitiesStats(cityNames, svitlobotResponse);
 
   const houseData = getHouseDataFromResponse(dtekResponse, process.env.DTEK_HOUSE);
-  console.log("[fetchOutageData] House data:", JSON.stringify(houseData, null, 2));
 
   return {
     dtekResponse,

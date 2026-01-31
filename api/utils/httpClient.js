@@ -1,17 +1,3 @@
-export const checkImageExists = async (url) => {
-  try {
-    const response = await fetch(url, {
-      method: "HEAD",
-      cache: "no-store",
-      signal: AbortSignal.timeout(1000),
-    });
-    return response.ok;
-  } catch (error) {
-    console.error("Error checking image:", error.message);
-    return false;
-  }
-};
-
 export const withRetry = async (fn, maxRetries = 10, functionName = "Unknown") => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
