@@ -24,11 +24,7 @@ export const fetchDTEKCurrentInfo = async (currentDate) => {
     }),
   });
 
-  console.log(
-    "DTEK API response status:",
-    response.status,
-    response.statusText,
-  );
+  console.log("DTEK API response status:", response.status, response.statusText);
 
   if (!response.ok) {
     throw new Error(`DTEK API returned error: ${response.status}`);
@@ -53,8 +49,7 @@ export const fetchPowerInfo = async () => {
       pragma: "no-cache",
       priority: "u=1, i",
       referer: "https://svitlobot.in.ua/",
-      "sec-ch-ua":
-        '"Not(A:Brand";v="8", "Chromium";v="144", "Google Chrome";v="144"',
+      "sec-ch-ua": '"Not(A:Brand";v="8", "Chromium";v="144", "Google Chrome";v="144"',
       "sec-ch-ua-mobile": "?0",
       "sec-ch-ua-platform": '"Windows"',
       "sec-fetch-dest": "empty",
@@ -65,11 +60,7 @@ export const fetchPowerInfo = async () => {
     },
   });
 
-  console.log(
-    "Svitlobot API response status:",
-    response.status,
-    response.statusText,
-  );
+  console.log("Svitlobot API response status:", response.status, response.statusText);
 
   if (!response.ok) {
     throw new Error(`Svitlobot API HTTP error ${response.status}`);

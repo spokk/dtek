@@ -81,10 +81,7 @@ export function getPowerCitiesStats(cityNames, entries) {
 
   const allCityEntries = entries.filter(
     (e) =>
-      e.city &&
-      cityNames.some(
-        (city) => city.toLowerCase().trim() === e.city.toLowerCase().trim(),
-      ),
+      e.city && cityNames.some((city) => city.toLowerCase().trim() === e.city.toLowerCase().trim()),
   );
 
   if (!allCityEntries.length) return null;

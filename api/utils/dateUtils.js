@@ -16,13 +16,7 @@ export const parseKyivDateString = (dateStr) => {
   const [day, month, year] = datePart.split(".").map(Number);
   const [hours, minutes] = timePart.split(":").map(Number);
 
-  if (
-    isNaN(hours) ||
-    isNaN(minutes) ||
-    isNaN(day) ||
-    isNaN(month) ||
-    isNaN(year)
-  ) {
+  if (isNaN(hours) || isNaN(minutes) || isNaN(day) || isNaN(month) || isNaN(year)) {
     throw new Error(`Invalid date values: "${dateStr}"`);
   }
 

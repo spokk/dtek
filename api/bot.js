@@ -15,15 +15,9 @@ bot.command("dtek", async (ctx) => {
 
     await ctx.sendChatAction("find_location");
 
-    const { dtekResponse, houseData, powerStats, currentDate } =
-      await fetchOutageData();
+    const { dtekResponse, houseData, powerStats, currentDate } = await fetchOutageData();
 
-    const caption = formatOutageMessage(
-      dtekResponse,
-      houseData,
-      currentDate,
-      powerStats,
-    );
+    const caption = formatOutageMessage(dtekResponse, houseData, currentDate, powerStats);
     const todayImgURL = getTodayImageURL();
 
     const imageExists = await checkImageExists(todayImgURL);
@@ -46,10 +40,7 @@ export default async (req, res) => {
   if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
 
   // Disable all caching at HTTP level
-  res.setHeader(
-    "Cache-Control",
-    "no-cache, no-store, must-revalidate, max-age=0",
-  );
+  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
   res.setHeader("Pragma", "no-cache");
   res.setHeader("Expires", "0");
   res.setHeader("X-Accel-Expires", "0");

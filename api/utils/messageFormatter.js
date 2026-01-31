@@ -1,15 +1,6 @@
-import {
-  extractTodayUNIX,
-  getHouseGroup,
-  getHoursData,
-  hasOutagePeriod,
-} from "../helpers.js";
+import { extractTodayUNIX, getHouseGroup, getHoursData, hasOutagePeriod } from "../helpers.js";
 
-import {
-  add24Hours,
-  calculateTimeDifference,
-  toKyivDayMonth,
-} from "./dateUtils.js";
+import { add24Hours, calculateTimeDifference, toKyivDayMonth } from "./dateUtils.js";
 
 export const formatScheduleText = (hoursData, timeZone, timeType) => {
   if (!hoursData || !timeZone || !timeType) return "";
@@ -73,11 +64,7 @@ const buildScheduleBlocks = (
   hoursDataTomorrow,
   preset,
 ) => {
-  const scheduleToday = formatScheduleText(
-    hoursDataToday,
-    preset?.time_zone,
-    preset?.time_type,
-  );
+  const scheduleToday = formatScheduleText(hoursDataToday, preset?.time_zone, preset?.time_type);
 
   const scheduleTomorrow = formatScheduleText(
     hoursDataTomorrow,
@@ -85,14 +72,11 @@ const buildScheduleBlocks = (
     preset?.time_type,
   );
 
-  const blocks = [
-    `<b>🗓 Графік відключень на ${toKyivDayMonth(todayUNIX)}:</b>\n${scheduleToday}`,
-  ];
+  const blocks = [`<b>🗓 Графік відключень на ${toKyivDayMonth(todayUNIX)}:</b>\n${scheduleToday}`];
 
   // Determine if tomorrow has any outage (any segment not "yes")
   const hasOutageTomorrow =
-    hoursDataTomorrow &&
-    Object.values(hoursDataTomorrow).some((status) => status !== "yes");
+    hoursDataTomorrow && Object.values(hoursDataTomorrow).some((status) => status !== "yes");
 
   if (hasOutageTomorrow) {
     blocks.push(
@@ -102,13 +86,7 @@ const buildScheduleBlocks = (
 
   return blocks;
 };
-const buildNoOutageMessage = (
-  street,
-  houseGroup,
-  scheduleBlocks,
-  powerStats,
-  updateTimestamp,
-) => {
+const buildNoOutageMessage = (street, houseGroup, scheduleBlocks, powerStats, updateTimestamp) => {
   const messageParts = [
     `⚡️ <b>Статус електропостачання: 📍${street} | ${houseGroup}</b>`,
     `⚠️ Якщо в даний момент у вас відсутнє світло, імовірно виникла аварійна ситуація, або діють стабілізаційні або екстрені відключення.`,
@@ -129,10 +107,8 @@ const buildOutageMessage = (
   powerStats,
   updateTimestamp,
 ) => {
-  const timeSince =
-    calculateTimeDifference(house.start_date, currentDate) || "Невідомо";
-  const timeUntil =
-    calculateTimeDifference(house.end_date, currentDate) || "Невідомо";
+  const timeSince = calculateTimeDifference(house.start_date, currentDate) || "Невідомо";
+  const timeUntil = calculateTimeDifference(house.end_date, currentDate) || "Невідомо";
 
   const messageParts = [
     `🚨 <b>Відключення електропостачання: 📍${street} | ${houseGroup}</b>`,
@@ -147,12 +123,7 @@ const buildOutageMessage = (
   return messageParts.join("\n\n");
 };
 
-export const formatOutageMessage = (
-  dtekResponse = {},
-  houseData,
-  currentDate,
-  powerStats,
-) => {
+export const formatOutageMessage = (dtekResponse = {}, houseData, currentDate, powerStats) => {
   const street = process.env.DTEK_STREET;
   const { updateTimestamp, fact, preset } = dtekResponse;
   const reasonKey = houseData?.sub_type_reason?.[0];
@@ -167,13 +138,7 @@ export const formatOutageMessage = (
     const scheduleBlocks = [];
 
     if (!outageExists) {
-      return buildNoOutageMessage(
-        street,
-        houseGroup,
-        scheduleBlocks,
-        powerStats,
-        updateTimestamp,
-      );
+      return buildNoOutageMessage(street, houseGroup, scheduleBlocks, powerStats, updateTimestamp);
     }
     return buildOutageMessage(
       street,
@@ -201,13 +166,7 @@ export const formatOutageMessage = (
 
   // Return appropriate message based on outage period
   if (!hasOutagePeriod(houseData)) {
-    return buildNoOutageMessage(
-      street,
-      houseGroup,
-      scheduleBlocks,
-      powerStats,
-      updateTimestamp,
-    );
+    return buildNoOutageMessage(street, houseGroup, scheduleBlocks, powerStats, updateTimestamp);
   }
 
   return buildOutageMessage(
