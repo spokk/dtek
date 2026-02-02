@@ -1,12 +1,7 @@
-export const getHouseDataFromResponse = (json, houseNumber) => {
-  if (!json?.data) {
-    console.error("API Response structure:", JSON.stringify(json, null, 2));
-    throw new Error(
-      `Invalid API response: missing data field. Response keys: ${json ? Object.keys(json).join(", ") : "null"}`,
-    );
-  }
+export const getHouseDataFromResponse = (dtekResponse) => {
+  const houseNumber = process.env.DTEK_HOUSE;
 
-  const house = json.data[houseNumber];
+  const house = dtekResponse?.data?.[houseNumber];
 
   if (!house) {
     return null;

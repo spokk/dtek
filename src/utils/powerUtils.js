@@ -53,31 +53,34 @@ export function parsePowerRow(row) {
   };
 }
 
-export function filterCity(entries, cityName) {
-  const nameLower = cityName.toLowerCase();
-  return entries.filter((e) => e.city?.toLowerCase() === nameLower);
+export function calculateLightPercent(houses = []) {
+  if (!houses.length) return 0;
+
+  const housesWithPower = houses.reduce((sum, house) => sum + (house.lightStatus === 1 ? 1 : 0), 0);
+
+  return Math.round((housesWithPower / houses.length) * 10000) / 100;
 }
 
-export function calculateLightPercent(entries = []) {
-  if (!entries.length) return 0;
+export function getRegionalPowerStats(svitlobotEntries) {
+  if (!svitlobotEntries?.length) return null;
 
-  const on = entries.reduce((sum, e) => sum + (e.lightStatus === 1), 0);
+  const citiesEnv = process.env.POWER_CITIES ?? "";
+  const cityNames = citiesEnv
+    .split(",")
+    .map((city) => city.trim().toLowerCase())
+    .filter(Boolean);
 
-  return Math.round((on / entries.length) * 10000) / 100;
-}
+  if (!cityNames.length) return null;
 
-export function getPowerCitiesStats(cityNames, entries) {
-  if (!Array.isArray(cityNames) || !cityNames.length) return null;
-  if (!entries?.length) return null;
+  const cityNamesSet = new Set(cityNames);
 
-  const allCityEntries = entries.filter(
-    (e) =>
-      e.city && cityNames.some((city) => city.toLowerCase().trim() === e.city.toLowerCase().trim()),
+  const housesFromRegion = svitlobotEntries.filter(
+    (entry) => entry.city && cityNamesSet.has(entry.city.toLowerCase().trim()),
   );
 
-  if (!allCityEntries.length) return null;
+  if (!housesFromRegion.length) return null;
 
-  const lightPercent = calculateLightPercent(allCityEntries);
+  const lightPercent = calculateLightPercent(housesFromRegion);
   const region = process.env.POWER_REGION || "Регіон";
 
   return `<b>📊 ${region}:</b> ${lightPercent}% з електропостачанням`;

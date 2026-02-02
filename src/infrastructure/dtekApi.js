@@ -39,8 +39,6 @@ export const fetchDTEKOutageData = async (currentDate) => {
     }),
   });
 
-  console.log(response);
-
   console.log("DTEK API response status:", response.status, response.statusText);
 
   if (!response.ok) {

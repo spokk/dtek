@@ -18,9 +18,12 @@ const buildSchedule = (fact, reasonKey, preset) => {
   return buildScheduleBlocks(todayUNIX, tomorrowUNIX, hoursDataToday, hoursDataTomorrow, preset);
 };
 
-const extractMessageData = (dtekResponse, houseData, currentDate, powerStats) => {
+const extractMessageData = (outageData) => {
   const street = process.env.DTEK_STREET;
+
+  const { dtekResponse, houseData, powerStats, currentDate } = outageData;
   const { updateTimestamp, fact, preset } = dtekResponse;
+
   const reasonKey = houseData?.sub_type_reason?.[0];
   const houseGroup = getHouseGroup(houseData, preset);
   const scheduleBlocks = buildSchedule(fact, reasonKey, preset);
@@ -36,10 +39,10 @@ const extractMessageData = (dtekResponse, houseData, currentDate, powerStats) =>
   };
 };
 
-export const formatOutageMessage = (dtekResponse = {}, houseData, currentDate, powerStats) => {
-  const messageData = extractMessageData(dtekResponse, houseData, currentDate, powerStats);
+export const formatOutageMessage = (outageData) => {
+  const messageData = extractMessageData(outageData);
 
-  if (hasOutagePeriod(houseData)) {
+  if (hasOutagePeriod(outageData?.houseData)) {
     return formatActiveOutageMessage(messageData);
   }
 

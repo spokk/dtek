@@ -20,9 +20,7 @@ bot.command("dtek", async (ctx) => {
       checkImageExists(todayImgURL),
     ]);
 
-    const { dtekResponse, houseData, powerStats, currentDate } = outageData;
-
-    const caption = formatOutageMessage(dtekResponse, houseData, currentDate, powerStats);
+    const caption = formatOutageMessage(outageData);
 
     console.log("DTEK command completed, sending response");
     console.log("Caption: \n", caption);
