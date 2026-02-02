@@ -2,11 +2,57 @@ import { calculateTimeDifference } from "../../utils/dateUtils.js";
 
 const buildMessageParts = (parts) => parts.filter(Boolean).join("\n\n");
 
+function formatPowerOutagePeriod(startDate, endDate) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  const sameDay =
+    start.getFullYear() === end.getFullYear() &&
+    start.getMonth() === end.getMonth() &&
+    start.getDate() === end.getDate();
+
+  const formatTime = (date) =>
+    date.toLocaleTimeString("uk-UA", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+  const formatDate = (date) =>
+    date.toLocaleDateString("uk-UA", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+
+  if (sameDay) {
+    return (
+      `🪫 <b>Вимкнення:</b> ${formatTime(start)}\n` + `🔋 <b>Відновлення:</b> ${formatTime(end)}`
+    );
+  }
+
+  return (
+    `🪫 <b>Вимкнення:</b> ${formatTime(start)} ${formatDate(start)}\n` +
+    `🔋 <b>Відновлення:</b> ${formatTime(end)} ${formatDate(end)}`
+  );
+}
+
+const formatOutageDetails = (house, currentDate) => {
+  const timeSince = calculateTimeDifference(house.start_date, currentDate) || "Невідомо";
+  const timeUntil = calculateTimeDifference(house.end_date, currentDate) || "Невідомо";
+  const powerOutagePeriod = formatPowerOutagePeriod(house.start_date, house.end_date);
+
+  return [
+    `❗️ <b>Тип:</b> ${house.sub_type}`,
+    `${powerOutagePeriod}`,
+    `⛔️ <b>Без світла:</b> ${timeSince}\n🔌 <b>До відновлення:</b> ${timeUntil}`,
+  ];
+};
+
 export const formatNoOutageMessage = (data) => {
   const { street, houseGroup, scheduleBlocks, powerStats, updateTimestamp } = data;
 
   const parts = [
-    `⚡️ <b>Статус електропостачання: 📍${street} | ${houseGroup}</b>`,
+    `⚡️ <b>Відключень не зафіксовано: 📍${street} | ${houseGroup}</b>`,
     `⚠️ Якщо в даний момент у вас відсутнє світло, імовірно виникла аварійна ситуація, або діють стабілізаційні або екстрені відключення.`,
     ...scheduleBlocks,
     powerStats,
@@ -16,23 +62,12 @@ export const formatNoOutageMessage = (data) => {
   return buildMessageParts(parts);
 };
 
-const formatOutageDetails = (house, currentDate) => {
-  const timeSince = calculateTimeDifference(house.start_date, currentDate) || "Невідомо";
-  const timeUntil = calculateTimeDifference(house.end_date, currentDate) || "Невідомо";
-
-  return [
-    `❗️ <b>Тип відключення:</b> ${house.sub_type}`,
-    `🪫 <b>Вимкнення:</b> ${house.start_date}\n🔋 <b>Відновлення:</b> ${house.end_date}`,
-    `⛔️ <b>Без світла:</b> ${timeSince}\n🔌 <b>До відновлення:</b> ${timeUntil}`,
-  ];
-};
-
 export const formatActiveOutageMessage = (data) => {
   const { street, houseGroup, house, currentDate, scheduleBlocks, powerStats, updateTimestamp } =
     data;
 
   const parts = [
-    `🚨 <b>Відключення електропостачання: 📍${street} | ${houseGroup}</b>`,
+    `🚨 <b>Відключення: 📍${street} | ${houseGroup}</b>`,
     ...formatOutageDetails(house, currentDate),
     ...scheduleBlocks,
     powerStats,
