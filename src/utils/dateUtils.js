@@ -88,13 +88,13 @@ export const toUADayMonth = (unixSeconds) => {
 };
 
 export const getFormattedUATime = (date) =>
-  date.toLocaleTimeString("uk-UA", {
+  date.toLocaleTimeString(UA_LOCALE, {
     hour: "2-digit",
     minute: "2-digit",
   });
 
 export const getFormattedUADate = (date) =>
-  date.toLocaleDateString("uk-UA", {
+  date.toLocaleDateString(UA_LOCALE, {
     day: "numeric",
     month: "long",
   });
