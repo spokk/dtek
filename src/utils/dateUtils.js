@@ -1,54 +1,74 @@
-export const parseKyivDateString = (dateStr) => {
-  if (typeof dateStr !== "string" || !dateStr.trim()) {
-    throw new Error(`Invalid date string: "${dateStr}"`);
-  }
+const KYIV_TZ = "Europe/Kyiv";
+const UA_LOCALE = "uk-UA";
 
-  const [part1, part2] = dateStr.split(" ");
-  if (!part1 || !part2) {
-    throw new Error(
-      `Invalid date format: expected "DD.MM.YYYY HH:MM" or "HH:MM DD.MM.YYYY", got "${dateStr}"`,
-    );
-  }
-
-  const isDateFirst = part1.includes(".");
-  const [datePart, timePart] = isDateFirst ? [part1, part2] : [part2, part1];
-
-  const [day, month, year] = datePart.split(".").map(Number);
-  const [hours, minutes] = timePart.split(":").map(Number);
-
-  if (isNaN(hours) || isNaN(minutes) || isNaN(day) || isNaN(month) || isNaN(year)) {
-    throw new Error(`Invalid date values: "${dateStr}"`);
-  }
-
-  return new Date(year, month - 1, day, hours, minutes);
+const MS = {
+  minute: 60 * 1000,
+  hour: 60 * 60 * 1000,
+  day: 24 * 60 * 60 * 1000,
 };
 
+// =======================
+// Core date parser
+// Supports:
+// - DD.MM.YYYY HH:MM
+// - HH:MM DD.MM.YYYY
+// =======================
+
+export const parseUaDateTimeSafe = (dateStr) => {
+  if (typeof dateStr !== "string" || !dateStr.trim()) {
+    return null;
+  }
+
+  const parts = dateStr.trim().split(" ");
+  if (parts.length !== 2) return null;
+
+  const [a, b] = parts;
+  const isDateFirst = a.includes(".");
+
+  const datePart = isDateFirst ? a : b;
+  const timePart = isDateFirst ? b : a;
+
+  const [day, month, year] = datePart.split(".").map(Number);
+  const [hour, minute] = timePart.split(":").map(Number);
+
+  if ([day, month, year, hour, minute].some(Number.isNaN)) {
+    return null;
+  }
+
+  const date = new Date(year, month - 1, day, hour, minute);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+// =======================
+// Time difference utils
+// =======================
+
 export const formatTimeDifference = (diffMs) => {
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const diffHours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
-  const diffMinutes = Math.floor((diffMs / (1000 * 60)) % 60);
+  const days = Math.floor(diffMs / MS.day);
+  const hours = Math.floor((diffMs % MS.day) / MS.hour);
+  const minutes = Math.floor((diffMs % MS.hour) / MS.minute);
 
-  const timeParts = [
-    diffDays > 0 && `${diffDays} дн`,
-    `${diffHours} год`,
-    `${diffMinutes} хв`,
-  ].filter(Boolean);
-
-  return timeParts.join(" ");
+  return [days > 0 && `${days} дн`, `${hours} год`, `${minutes} хв`].filter(Boolean).join(" ");
 };
 
 export const calculateTimeDifference = (date1Str, date2Str) => {
-  const date1 = parseKyivDateString(date1Str);
-  const date2 = parseKyivDateString(date2Str);
-  const diffMs = Math.abs(date2 - date1);
+  const d1 = parseUaDateTimeSafe(date1Str);
+  const d2 = parseUaDateTimeSafe(date2Str);
 
-  return diffMs <= 0 ? null : formatTimeDifference(diffMs);
+  if (!d1 || !d2) return null;
+
+  const diffMs = Math.abs(d2 - d1);
+  return diffMs > 0 ? formatTimeDifference(diffMs) : null;
 };
 
-export const getCurrentDateKyiv = () => {
+// =======================
+// Kyiv / UA formatting
+// =======================
+
+export const getCurrentUADate = () => {
   return new Date()
-    .toLocaleString("uk-UA", {
-      timeZone: "Europe/Kyiv",
+    .toLocaleString(UA_LOCALE, {
+      timeZone: KYIV_TZ,
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -59,37 +79,25 @@ export const getCurrentDateKyiv = () => {
     .replace(",", "");
 };
 
-export const toKyivDayMonth = (unixSeconds) => {
-  const date = new Date(unixSeconds * 1000);
-
-  return new Intl.DateTimeFormat("uk-UA", {
-    timeZone: "Europe/Kyiv",
+export const toUADayMonth = (unixSeconds) => {
+  return new Intl.DateTimeFormat(UA_LOCALE, {
+    timeZone: KYIV_TZ,
     day: "numeric",
     month: "long",
-  }).format(date);
+  }).format(new Date(unixSeconds * 1000));
 };
 
-export function parseUaDateTimeSafe(dateTime) {
-  try {
-    if (typeof dateTime !== "string") return null;
+export const getFormattedUATime = (date) =>
+  date.toLocaleTimeString("uk-UA", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-    const [time, date] = dateTime.split(" ");
-    if (!time || !date) return null;
-
-    const [hour, minute] = time.split(":").map(Number);
-    const [day, month, year] = date.split(".").map(Number);
-
-    if ([hour, minute, day, month, year].some((n) => Number.isNaN(n))) {
-      return null;
-    }
-
-    const parsed = new Date(year, month - 1, day, hour, minute);
-
-    return Number.isNaN(parsed.getTime()) ? null : parsed;
-  } catch {
-    return null;
-  }
-}
+export const getFormattedUADate = (date) =>
+  date.toLocaleDateString("uk-UA", {
+    day: "numeric",
+    month: "long",
+  });
 
 export function add24Hours(unixSeconds) {
   return unixSeconds + 86400;

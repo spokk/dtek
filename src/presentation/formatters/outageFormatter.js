@@ -1,4 +1,9 @@
-import { calculateTimeDifference, parseUaDateTimeSafe } from "../../utils/dateUtils.js";
+import {
+  calculateTimeDifference,
+  parseUaDateTimeSafe,
+  getFormattedUATime,
+  getFormattedUADate,
+} from "../../utils/dateUtils.js";
 
 const buildMessageParts = (parts) => parts.filter(Boolean).join("\n\n");
 
@@ -17,27 +22,16 @@ function formatPowerOutagePeriod(startInput, endInput) {
     start.getMonth() === end.getMonth() &&
     start.getDate() === end.getDate();
 
-  const formatTime = (date) =>
-    date.toLocaleTimeString("uk-UA", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-  const formatDate = (date) =>
-    date.toLocaleDateString("uk-UA", {
-      day: "numeric",
-      month: "long",
-    });
-
   if (sameDay) {
     return (
-      `🪫 <b>Вимкнення:</b> ${formatTime(start)}\n` + `🔋 <b>Відновлення:</b> ${formatTime(end)}`
+      `🪫 <b>Вимкнення:</b> ${getFormattedUATime(start)}\n` +
+      `🔋 <b>Відновлення:</b> ${getFormattedUATime(end)}`
     );
   }
 
   return (
-    `🪫 <b>Вимкнення:</b> ${formatTime(start)} ${formatDate(start)}\n` +
-    `🔋 <b>Відновлення:</b> ${formatTime(end)} ${formatDate(end)}`
+    `🪫 <b>Вимкнення:</b> ${getFormattedUATime(start)} ${getFormattedUADate(start)}\n` +
+    `🔋 <b>Відновлення:</b> ${getFormattedUATime(end)} ${getFormattedUADate(end)}`
   );
 }
 
