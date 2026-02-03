@@ -1,3 +1,5 @@
+import { DateTime } from "luxon";
+
 const KYIV_TZ = "Europe/Kyiv";
 const UA_LOCALE = "uk-UA";
 
@@ -21,7 +23,7 @@ export const parseUaDateTimeSafe = (dateStr) => {
     return null;
   }
 
-  const parts = dateStr.trim().split(" ");
+  const parts = dateStr.trim().split(/\s+/); // Handle multiple spaces
   if (parts.length !== 2) return null;
 
   const [a, b] = parts;
@@ -30,15 +32,50 @@ export const parseUaDateTimeSafe = (dateStr) => {
   const datePart = isDateFirst ? a : b;
   const timePart = isDateFirst ? b : a;
 
-  const [day, month, year] = datePart.split(".").map(Number);
-  const [hour, minute] = timePart.split(":").map(Number);
+  const dateParts = datePart.split(".");
+  const timeParts = timePart.split(":");
 
+  // Validate structure before parsing
+  if (dateParts.length !== 3 || timeParts.length !== 2) {
+    return null;
+  }
+
+  const [day, month, year] = dateParts.map(Number);
+  const [hour, minute] = timeParts.map(Number);
+
+  // Validate all numbers parsed correctly
   if ([day, month, year, hour, minute].some(Number.isNaN)) {
     return null;
   }
 
-  const date = new Date(year, month - 1, day, hour, minute);
-  return Number.isNaN(date.getTime()) ? null : date;
+  // Validate ranges
+  if (
+    day < 1 ||
+    day > 31 ||
+    month < 1 ||
+    month > 12 ||
+    year < 1000 ||
+    year > 9999 ||
+    hour < 0 ||
+    hour > 23 ||
+    minute < 0 ||
+    minute > 59
+  ) {
+    return null;
+  }
+
+  // Use Luxon directly for parsing to avoid JS Date quirks
+  const kyivDateTime = DateTime.fromObject(
+    { year, month, day, hour, minute },
+    { zone: KYIV_TZ, locale: UA_LOCALE },
+  );
+
+  // Check if the date is valid in Luxon
+  if (!kyivDateTime.isValid) {
+    return null;
+  }
+
+  return kyivDateTime.toJSDate();
 };
 
 // =======================
