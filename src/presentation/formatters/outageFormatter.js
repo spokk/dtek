@@ -1,10 +1,16 @@
-import { calculateTimeDifference } from "../../utils/dateUtils.js";
+import { calculateTimeDifference, parseUaDateTimeSafe } from "../../utils/dateUtils.js";
 
 const buildMessageParts = (parts) => parts.filter(Boolean).join("\n\n");
 
-function formatPowerOutagePeriod(startDate, endDate) {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
+function formatPowerOutagePeriod(startInput, endInput) {
+  const start = parseUaDateTimeSafe(startInput);
+  const end = parseUaDateTimeSafe(endInput);
+
+  const shouldShowMessageAsIs = !start || !end;
+
+  if (shouldShowMessageAsIs) {
+    return `🪫 <b>Вимкнення:</b> ${startInput}\n` + `🔋 <b>Відновлення:</b> ${endInput}`;
+  }
 
   const sameDay =
     start.getFullYear() === end.getFullYear() &&
@@ -19,9 +25,8 @@ function formatPowerOutagePeriod(startDate, endDate) {
 
   const formatDate = (date) =>
     date.toLocaleDateString("uk-UA", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
+      day: "numeric",
+      month: "long",
     });
 
   if (sameDay) {

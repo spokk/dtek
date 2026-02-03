@@ -69,6 +69,28 @@ export const toKyivDayMonth = (unixSeconds) => {
   }).format(date);
 };
 
+export function parseUaDateTimeSafe(dateTime) {
+  try {
+    if (typeof dateTime !== "string") return null;
+
+    const [time, date] = dateTime.split(" ");
+    if (!time || !date) return null;
+
+    const [hour, minute] = time.split(":").map(Number);
+    const [day, month, year] = date.split(".").map(Number);
+
+    if ([hour, minute, day, month, year].some((n) => Number.isNaN(n))) {
+      return null;
+    }
+
+    const parsed = new Date(year, month - 1, day, hour, minute);
+
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  } catch {
+    return null;
+  }
+}
+
 export function add24Hours(unixSeconds) {
   return unixSeconds + 86400;
 }
