@@ -1,7 +1,7 @@
 import { fetchDTEKOutageData } from "../infrastructure/dtekApi.js";
 import { fetchSvitlobotOutageData } from "../infrastructure/svitlobotApi.js";
 import { withRetry } from "../utils/httpClient.js";
-import { getCurrentUADate } from "../utils/dateUtils.js";
+import { getCurrentUADateTime } from "../utils/dateUtils.js";
 import { getRegionalPowerStats, parsePowerRow } from "../utils/powerUtils.js";
 import { getHouseDataFromResponse } from "../helpers.js";
 
@@ -72,7 +72,7 @@ function buildOutageResponse(dtekResponse, svitlobotData, currentDate) {
 }
 
 export async function getOutageData() {
-  const currentDate = getCurrentUADate();
+  const currentDate = getCurrentUADateTime();
 
   const { dtekData, svitlobotData } = await fetchAllOutageSources(currentDate);
 

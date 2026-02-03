@@ -1,8 +1,8 @@
 import {
   calculateTimeDifference,
   parseUaDateTimeSafe,
-  getFormattedUATime,
-  getFormattedUADate,
+  formatUATime,
+  formatUADate,
 } from "../../utils/dateUtils.js";
 
 const buildMessageParts = (parts) => parts.filter(Boolean).join("\n\n");
@@ -24,14 +24,14 @@ function formatPowerOutagePeriod(startInput, endInput) {
 
   if (sameDay) {
     return (
-      `🪫 <b>Вимкнення:</b> ${getFormattedUATime(start)}\n` +
-      `🔋 <b>Відновлення:</b> ${getFormattedUATime(end)}`
+      `🪫 <b>Вимкнення:</b> ${formatUATime(start)}\n` +
+      `🔋 <b>Відновлення:</b> ${formatUATime(end)}`
     );
   }
 
   return (
-    `🪫 <b>Вимкнення:</b> ${getFormattedUATime(start)} ${getFormattedUADate(start)}\n` +
-    `🔋 <b>Відновлення:</b> ${getFormattedUATime(end)} ${getFormattedUADate(end)}`
+    `🪫 <b>Вимкнення:</b> ${formatUATime(start)} ${formatUADate(start)}\n` +
+    `🔋 <b>Відновлення:</b> ${formatUATime(end)} ${formatUADate(end)}`
   );
 }
 

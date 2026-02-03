@@ -1,10 +1,12 @@
 const KYIV_TZ = "Europe/Kyiv";
 const UA_LOCALE = "uk-UA";
 
+const MS_IN_SECOND = 1000;
+
 const MS = {
-  minute: 60 * 1000,
-  hour: 60 * 60 * 1000,
-  day: 24 * 60 * 60 * 1000,
+  minute: 60 * MS_IN_SECOND,
+  hour: 60 * 60 * MS_IN_SECOND,
+  day: 24 * 60 * 60 * MS_IN_SECOND,
 };
 
 // =======================
@@ -61,44 +63,50 @@ export const calculateTimeDifference = (date1Str, date2Str) => {
   return diffMs > 0 ? formatTimeDifference(diffMs) : null;
 };
 
+export function addNextDay(unixSeconds) {
+  const date = new Date(unixSeconds * MS_IN_SECOND);
+  date.setDate(date.getDate() + 1);
+  return Math.floor(date.getTime() / MS_IN_SECOND);
+}
+
 // =======================
 // Kyiv / UA formatting
 // =======================
 
-export const getCurrentUADate = () => {
-  return new Date()
-    .toLocaleString(UA_LOCALE, {
-      timeZone: KYIV_TZ,
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    })
-    .replace(",", "");
+const dateTimeFormatter = new Intl.DateTimeFormat(UA_LOCALE, {
+  timeZone: KYIV_TZ,
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
+const dayMonthFormatter = new Intl.DateTimeFormat(UA_LOCALE, {
+  timeZone: KYIV_TZ,
+  day: "numeric",
+  month: "long",
+});
+
+const timeFormatter = new Intl.DateTimeFormat(UA_LOCALE, {
+  timeZone: KYIV_TZ,
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+export const getCurrentUADateTime = () => {
+  return dateTimeFormatter.format(new Date());
 };
 
-export const toUADayMonth = (unixSeconds) => {
-  return new Intl.DateTimeFormat(UA_LOCALE, {
-    timeZone: KYIV_TZ,
-    day: "numeric",
-    month: "long",
-  }).format(new Date(unixSeconds * 1000));
+export const toUADayMonthFromUnix = (unixSeconds) => {
+  return dayMonthFormatter.format(new Date(unixSeconds * 1000));
 };
 
-export const getFormattedUATime = (date) =>
-  date.toLocaleTimeString(UA_LOCALE, {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+export const formatUATime = (date) => {
+  return timeFormatter.format(date);
+};
 
-export const getFormattedUADate = (date) =>
-  date.toLocaleDateString(UA_LOCALE, {
-    day: "numeric",
-    month: "long",
-  });
-
-export function add24Hours(unixSeconds) {
-  return unixSeconds + 86400;
-}
+export const formatUADate = (date) => {
+  return dayMonthFormatter.format(date);
+};

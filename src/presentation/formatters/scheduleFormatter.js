@@ -1,4 +1,4 @@
-import { toUADayMonth } from "../../utils/dateUtils.js";
+import { toUADayMonthFromUnix } from "../../utils/dateUtils.js";
 
 const STATUS_ICONS = {
   yes: "🟢",
@@ -89,7 +89,9 @@ export const buildScheduleBlocks = (
 ) => {
   const scheduleToday = formatScheduleText(hoursDataToday, preset?.time_zone, preset?.time_type);
 
-  const blocks = [`<b>🗓 Графік відключень на ${toUADayMonth(todayUNIX)}:</b>\n${scheduleToday}`];
+  const blocks = [
+    `<b>🗓 Графік відключень на ${toUADayMonthFromUnix(todayUNIX)}:</b>\n${scheduleToday}`,
+  ];
 
   if (hasAnyOutage(hoursDataTomorrow)) {
     const scheduleTomorrow = formatScheduleText(
@@ -99,7 +101,7 @@ export const buildScheduleBlocks = (
     );
 
     blocks.push(
-      `<b>🗓 Графік відключень на ${toUADayMonth(tomorrowUNIX)}:</b>\n${scheduleTomorrow}`,
+      `<b>🗓 Графік відключень на ${toUADayMonthFromUnix(tomorrowUNIX)}:</b>\n${scheduleTomorrow}`,
     );
   }
 

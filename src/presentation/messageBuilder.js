@@ -1,4 +1,4 @@
-import { add24Hours } from "../utils/dateUtils.js";
+import { addNextDay } from "../utils/dateUtils.js";
 import { buildScheduleBlocks } from "./formatters/scheduleFormatter.js";
 import { formatNoOutageMessage, formatActiveOutageMessage } from "./formatters/outageFormatter.js";
 import { extractTodayUNIX, getHouseGroup, getHoursData, hasOutagePeriod } from "../helpers.js";
@@ -11,7 +11,7 @@ const buildSchedule = (fact, reasonKey, preset) => {
     return [];
   }
 
-  const tomorrowUNIX = add24Hours(todayUNIX);
+  const tomorrowUNIX = addNextDay(todayUNIX);
   const hoursDataToday = getHoursData(fact, reasonKey, todayUNIX);
   const hoursDataTomorrow = getHoursData(fact, reasonKey, tomorrowUNIX);
 
