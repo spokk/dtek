@@ -1,13 +1,6 @@
 export const getHouseDataFromResponse = (dtekResponse) => {
   const houseNumber = process.env.DTEK_HOUSE;
-
-  const house = dtekResponse?.data?.[houseNumber];
-
-  if (!house) {
-    return null;
-  }
-
-  return house;
+  return dtekResponse?.data?.[houseNumber] ?? null;
 };
 
 export const extractTodayUNIX = (fact) => {
@@ -15,9 +8,11 @@ export const extractTodayUNIX = (fact) => {
 
   return Number.isInteger(todayUNIX) && todayUNIX > 0 ? todayUNIX : null;
 };
+
 export const getHouseGroup = (houseData, preset) => {
   const reasonKey = houseData?.sub_type_reason?.[0];
-  return preset?.sch_names?.[reasonKey] || reasonKey?.slice(-3) || "Невідомо";
+
+  return preset?.sch_names?.[reasonKey] ?? reasonKey?.slice(-3) ?? "Невідомо";
 };
 
 export const getHoursData = (fact, reasonKey, dayUNIX) => {
@@ -25,5 +20,5 @@ export const getHoursData = (fact, reasonKey, dayUNIX) => {
 };
 
 export const hasOutagePeriod = (houseData) => {
-  return houseData?.sub_type && (houseData?.start_date || houseData?.end_date);
+  return Boolean(houseData?.sub_type && (houseData?.start_date || houseData?.end_date));
 };
