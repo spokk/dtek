@@ -11,13 +11,10 @@ export const getHouseDataFromResponse = (dtekResponse) => {
 };
 
 export const extractTodayUNIX = (fact) => {
-  let todayUNIX = fact?.today;
-  if (typeof todayUNIX === "string") {
-    todayUNIX = parseInt(todayUNIX, 10);
-  }
+  const todayUNIX = typeof fact?.today === "string" ? parseInt(fact.today, 10) : fact?.today;
+
   return Number.isInteger(todayUNIX) && todayUNIX > 0 ? todayUNIX : null;
 };
-
 export const getHouseGroup = (houseData, preset) => {
   const reasonKey = houseData?.sub_type_reason?.[0];
   return preset?.sch_names?.[reasonKey] || reasonKey?.slice(-3) || "Невідомо";

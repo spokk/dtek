@@ -3,14 +3,6 @@ import { DateTime } from "luxon";
 const KYIV_TZ = "Europe/Kyiv";
 const UA_LOCALE = "uk-UA";
 
-const MS_IN_SECOND = 1000;
-
-const MS = {
-  minute: 60 * MS_IN_SECOND,
-  hour: 60 * 60 * MS_IN_SECOND,
-  day: 24 * 60 * 60 * MS_IN_SECOND,
-};
-
 // =======================
 // Core date parser
 // Supports:
@@ -30,38 +22,18 @@ export const parseUaDateTimeSafe = (dateStr) => {
   const datePart = isDateFirst ? a : b;
   const timePart = isDateFirst ? b : a;
 
-  const dateParts = datePart.split(".");
-  const timeParts = timePart.split(":");
+  // Use Luxon's fromFormat with strict parsing
+  const kyivDateTime = DateTime.fromFormat(`${datePart} ${timePart}`, "dd.MM.yyyy HH:mm", {
+    zone: KYIV_TZ,
+    locale: UA_LOCALE,
+  });
 
-  if (dateParts.length !== 3 || timeParts.length !== 2) return null;
-
-  const [day, month, year] = dateParts.map(Number);
-  const [hour, minute] = timeParts.map(Number);
-
-  if ([day, month, year, hour, minute].some(Number.isNaN)) return null;
-  if (
-    day < 1 ||
-    day > 31 ||
-    month < 1 ||
-    month > 12 ||
-    year < 1000 ||
-    year > 9999 ||
-    hour < 0 ||
-    hour > 23 ||
-    minute < 0 ||
-    minute > 59
-  )
-    return null;
-
-  const kyivDateTime = DateTime.fromObject(
-    { year, month, day, hour, minute },
-    { zone: KYIV_TZ, locale: UA_LOCALE },
-  );
-
+  // Luxon validates everything: valid dates, leap years, time ranges, etc.
   if (!kyivDateTime.isValid) return null;
 
   return kyivDateTime.toJSDate();
 };
+
 // =======================
 // Time difference utils
 // =======================
@@ -70,9 +42,13 @@ export const formatTimeDifference = (diffMs) => {
   // Handle zero or negative differences
   if (diffMs <= 0) return null;
 
-  const days = Math.floor(diffMs / MS.day);
-  const hours = Math.floor((diffMs % MS.day) / MS.hour);
-  const minutes = Math.floor((diffMs % MS.hour) / MS.minute);
+  const duration = DateTime.fromMillis(0)
+    .plus({ milliseconds: diffMs })
+    .diff(DateTime.fromMillis(0));
+
+  const days = Math.floor(duration.as("days"));
+  const hours = Math.floor(duration.as("hours") % 24);
+  const minutes = Math.floor(duration.as("minutes") % 60);
 
   // Always show at least minutes, even if 0
   const parts = [];
@@ -90,46 +66,34 @@ export const calculateTimeDifference = (from, to) => {
   const d2 = parseUaDateTimeSafe(to);
   if (!d2) return null;
 
-  // diff in milliseconds
-  const diffMs = Math.abs(d2 - d1);
+  // Use Luxon to calculate difference
+  const dt1 = DateTime.fromJSDate(d1);
+  const dt2 = DateTime.fromJSDate(d2);
+  const diffMs = Math.abs(dt2.diff(dt1).as("milliseconds"));
 
   return formatTimeDifference(diffMs);
 };
 
 export function addNextDay(unixSeconds) {
-  const date = new Date(unixSeconds * MS_IN_SECOND);
-  date.setDate(date.getDate() + 1);
-  return Math.floor(date.getTime() / MS_IN_SECOND);
+  return DateTime.fromSeconds(unixSeconds).plus({ days: 1 }).toSeconds();
 }
 
 // =======================
 // Kyiv / UA formatting
 // =======================
 
-const dayMonthFormatter = new Intl.DateTimeFormat(UA_LOCALE, {
-  timeZone: KYIV_TZ,
-  day: "numeric",
-  month: "long",
-});
-
-const timeFormatter = new Intl.DateTimeFormat(UA_LOCALE, {
-  timeZone: KYIV_TZ,
-  hour: "2-digit",
-  minute: "2-digit",
-});
-
 export const getCurrentUADateTime = () => {
   return DateTime.now().setZone(KYIV_TZ).toFormat("HH:mm dd.MM.yyyy");
 };
 
 export const toUADayMonthFromUnix = (unixSeconds) => {
-  return dayMonthFormatter.format(new Date(unixSeconds * 1000));
+  return DateTime.fromSeconds(unixSeconds).setZone(KYIV_TZ).setLocale(UA_LOCALE).toFormat("d MMMM");
 };
 
 export const formatUATime = (date) => {
-  return timeFormatter.format(date);
+  return DateTime.fromJSDate(date).setZone(KYIV_TZ).setLocale(UA_LOCALE).toFormat("HH:mm");
 };
 
 export const formatUADate = (date) => {
-  return dayMonthFormatter.format(date);
+  return DateTime.fromJSDate(date).setZone(KYIV_TZ).setLocale(UA_LOCALE).toFormat("d MMMM");
 };
