@@ -12,7 +12,7 @@ export const extractTodayUNIX = (fact) => {
 export const getHouseGroup = (houseData, preset) => {
   const reasonKey = houseData?.sub_type_reason?.[0];
 
-  return preset?.sch_names?.[reasonKey] ?? reasonKey?.slice(-3) ?? "Невідомо";
+  return preset?.sch_names?.[reasonKey] ?? reasonKey?.match(/(\d+\.?\d*)/)?.[1] ?? "Невідомо";
 };
 
 export const getHoursData = (fact, reasonKey, dayUNIX) => {

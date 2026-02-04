@@ -4,5 +4,14 @@ import js from "@eslint/js";
 
 export default defineConfig([
   { files: ["**/*.js"], languageOptions: { globals: globals.node } },
+  {
+    files: ["**/*.test.js", "**/*.spec.js"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.jest,
+      },
+    },
+  },
   { files: ["**/*.js"], plugins: { js }, extends: ["js/recommended"] },
 ]);
