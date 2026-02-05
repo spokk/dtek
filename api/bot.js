@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { Telegraf } from "telegraf";
 
-import { getTodayImageURL, checkImageExists } from "../src/infrastructure/imageService.js";
+import { getOutageScheduleImageBuffer } from "../src/infrastructure/imageService.js";
 import { getOutageData } from "../src/services/outageService.js";
 import { formatOutageMessage } from "../src/presentation/messageBuilder.js";
 
@@ -13,11 +13,9 @@ bot.command("dtek", async (ctx) => {
 
     await ctx.sendChatAction("typing");
 
-    const todayImgURL = getTodayImageURL();
-
-    const [outageData, imageExists] = await Promise.all([
+    const [outageData, imageBuffer] = await Promise.all([
       getOutageData(),
-      checkImageExists(todayImgURL),
+      getOutageScheduleImageBuffer(),
     ]);
 
     const caption = formatOutageMessage(outageData);
@@ -25,8 +23,8 @@ bot.command("dtek", async (ctx) => {
     console.log("DTEK command completed, sending response");
     console.log("Caption: \n", caption);
 
-    if (imageExists) {
-      return ctx.replyWithPhoto(todayImgURL, { caption, parse_mode: "HTML" });
+    if (imageBuffer) {
+      return ctx.replyWithPhoto({ source: imageBuffer }, { caption, parse_mode: "HTML" });
     } else {
       return ctx.reply(caption, { parse_mode: "HTML" });
     }
