@@ -13,7 +13,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "dotenv": "^17.2.3",
+    "dotenv": "^17.2.4",
     "luxon": "^3.7.2",
     "telegraf": "^4.16.3"
   },
