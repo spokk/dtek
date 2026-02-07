@@ -5,6 +5,7 @@ import { getOutageScheduleImageBuffer } from "../src/infrastructure/imageService
 import { getOutageData } from "../src/services/outageService.js";
 import { formatOutageMessage } from "../src/presentation/messageBuilder.js";
 
+const WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET;
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
 bot.command("dtek", async (ctx) => {
@@ -37,7 +38,10 @@ bot.command("dtek", async (ctx) => {
 export default async (req, res) => {
   if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
 
-  // Disable all caching at HTTP level
+  if (WEBHOOK_SECRET && req.headers["x-telegram-bot-api-secret-token"] !== WEBHOOK_SECRET) {
+    return res.status(401).send("Unauthorized");
+  }
+
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
   res.setHeader("Pragma", "no-cache");
   res.setHeader("Expires", "0");
