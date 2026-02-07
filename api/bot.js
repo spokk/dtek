@@ -50,11 +50,6 @@ export default async (req, res) => {
     return res.status(401).send("Unauthorized");
   }
 
-  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
-  res.setHeader("Pragma", "no-cache");
-  res.setHeader("Expires", "0");
-  res.setHeader("X-Accel-Expires", "0");
-
   try {
     await bot.handleUpdate(req.body);
     res.status(200).send("OK");
