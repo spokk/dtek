@@ -4,6 +4,7 @@ import {
   formatUATime,
   formatUADate,
 } from "../../utils/dateUtils.js";
+import { escapeHtml } from "../../utils/escapeHtml.js";
 
 const buildMessageParts = (parts) => parts.filter(Boolean).join("\n\n");
 
@@ -14,7 +15,10 @@ function formatPowerOutagePeriod(startInput, endInput) {
   const shouldShowMessageAsIs = !start || !end;
 
   if (shouldShowMessageAsIs) {
-    return `🪫 <b>Вимкнення:</b> ${startInput}\n` + `🔋 <b>Відновлення:</b> ${endInput}`;
+    return (
+      `🪫 <b>Вимкнення:</b> ${escapeHtml(startInput)}\n` +
+      `🔋 <b>Відновлення:</b> ${escapeHtml(endInput)}`
+    );
   }
 
   const sameDay =
@@ -41,9 +45,9 @@ const formatOutageDetails = (house, currentDate) => {
   const powerOutagePeriod = formatPowerOutagePeriod(house.start_date, house.end_date);
 
   return [
-    `❗️ <b>Тип:</b> ${house.sub_type}`,
+    `❗️ <b>Тип:</b> ${escapeHtml(house.sub_type)}`,
     `${powerOutagePeriod}`,
-    `⛔️ <b>Без світла:</b> ${timeSince}\n🔌 <b>До відновлення:</b> ${timeUntil}`,
+    `⛔️ <b>Без світла:</b> ${escapeHtml(timeSince)}\n🔌 <b>До відновлення:</b> ${escapeHtml(timeUntil)}`,
   ];
 };
 
@@ -51,11 +55,11 @@ export const formatNoOutageMessage = (data) => {
   const { street, houseGroup, scheduleBlocks, powerStats, updateTimestamp } = data;
 
   const parts = [
-    `⚡️ <b>Відключень не зафіксовано: 📍${street} | ${houseGroup}</b>`,
+    `⚡️ <b>Відключень не зафіксовано: 📍${escapeHtml(street)} | ${escapeHtml(houseGroup)}</b>`,
     `⚠️ Якщо в даний момент у вас відсутнє світло, імовірно виникла аварійна ситуація, або діють стабілізаційні або екстрені відключення.`,
     ...scheduleBlocks,
     powerStats,
-    `🕒 Оновлено: <i>${updateTimestamp}</i>`,
+    `🕒 Оновлено: <i>${escapeHtml(updateTimestamp)}</i>`,
   ];
 
   return buildMessageParts(parts);
@@ -66,11 +70,11 @@ export const formatActiveOutageMessage = (data) => {
     data;
 
   const parts = [
-    `🚨 <b>Відключення: 📍${street} | ${houseGroup}</b>`,
+    `🚨 <b>Відключення: 📍${escapeHtml(street)} | ${escapeHtml(houseGroup)}</b>`,
     ...formatOutageDetails(house, currentDate),
     ...scheduleBlocks,
     powerStats,
-    `🕒 Оновлено: <i>${updateTimestamp}</i>`,
+    `🕒 Оновлено: <i>${escapeHtml(updateTimestamp)}</i>`,
   ];
 
   return buildMessageParts(parts);
