@@ -25,7 +25,12 @@ bot.command("dtek", async (ctx) => {
     console.log("Caption: \n", caption);
 
     if (imageBuffer) {
-      return ctx.replyWithPhoto({ source: imageBuffer }, { caption, parse_mode: "HTML" });
+      if (caption.length <= 1024) {
+        return ctx.replyWithPhoto({ source: imageBuffer }, { caption, parse_mode: "HTML" });
+      }
+
+      await ctx.replyWithPhoto({ source: imageBuffer });
+      return ctx.reply(caption, { parse_mode: "HTML" });
     } else {
       return ctx.reply(caption, { parse_mode: "HTML" });
     }
