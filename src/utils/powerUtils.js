@@ -1,3 +1,5 @@
+import { config } from "../config.js";
+
 const FIELD_INDEX = {
   LIGHT_RAW: 1,
   TIMESTAMP: 2,
@@ -64,7 +66,7 @@ export function calculateLightPercent(houses = []) {
 export function getRegionalPowerStats(svitlobotEntries) {
   if (!svitlobotEntries?.length) return null;
 
-  const citiesEnv = process.env.POWER_CITIES ?? "";
+  const citiesEnv = config.power.cities;
   const cityNames = citiesEnv
     .split(",")
     .map((city) => city.trim().toLowerCase())
@@ -81,7 +83,7 @@ export function getRegionalPowerStats(svitlobotEntries) {
   if (!housesFromRegion.length) return null;
 
   const lightPercent = calculateLightPercent(housesFromRegion);
-  const region = process.env.POWER_REGION || "Регіон";
+  const region = config.power.region;
 
   return `<b>📊 ${region}:</b> ${lightPercent}% з електропостачанням`;
 }

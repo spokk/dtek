@@ -5,22 +5,20 @@ import {
   getHoursData,
   hasOutagePeriod,
 } from "./helpers";
+import { config } from "../config.js";
+
+jest.mock("../config.js", () => ({
+  config: {
+    dtek: {
+      house: undefined,
+    },
+  },
+}));
 
 describe("helpers", () => {
   describe("getHouseDataFromResponse", () => {
-    const originalEnv = process.env;
-
-    beforeEach(() => {
-      jest.resetModules();
-      process.env = { ...originalEnv };
-    });
-
-    afterAll(() => {
-      process.env = originalEnv;
-    });
-
     it("returns house data when valid response and house number exist", () => {
-      process.env.DTEK_HOUSE = "123";
+      config.dtek.house = "123";
       const dtekResponse = {
         data: {
           123: { name: "House 123", status: "active" },
@@ -33,7 +31,7 @@ describe("helpers", () => {
     });
 
     it("returns null when house number is not in response data", () => {
-      process.env.DTEK_HOUSE = "456";
+      config.dtek.house = "456";
       const dtekResponse = {
         data: {
           123: { name: "House 123" },
@@ -43,23 +41,23 @@ describe("helpers", () => {
     });
 
     it("returns null when dtekResponse is null", () => {
-      process.env.DTEK_HOUSE = "123";
+      config.dtek.house = "123";
       expect(getHouseDataFromResponse(null)).toBeNull();
     });
 
     it("returns null when dtekResponse is undefined", () => {
-      process.env.DTEK_HOUSE = "123";
+      config.dtek.house = "123";
       expect(getHouseDataFromResponse(undefined)).toBeNull();
     });
 
     it("returns null when dtekResponse.data is missing", () => {
-      process.env.DTEK_HOUSE = "123";
+      config.dtek.house = "123";
       const dtekResponse = { other: "data" };
       expect(getHouseDataFromResponse(dtekResponse)).toBeNull();
     });
 
-    it("returns null when DTEK_HOUSE env variable is not set", () => {
-      delete process.env.DTEK_HOUSE;
+    it("returns null when DTEK_HOUSE is not set", () => {
+      config.dtek.house = undefined;
       const dtekResponse = {
         data: {
           123: { name: "House 123" },

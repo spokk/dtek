@@ -1,5 +1,7 @@
+import { config } from "../config.js";
+
 export const getHouseDataFromResponse = (dtekResponse) => {
-  const houseNumber = process.env.DTEK_HOUSE;
+  const houseNumber = config.dtek.house;
   return dtekResponse?.data?.[houseNumber] ?? null;
 };
 
