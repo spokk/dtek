@@ -18,6 +18,7 @@ src/
 ## Setup
 
 1. **Clone and install**
+
    ```sh
    git clone https://github.com/spokk/dtek.git
    cd dtek
@@ -26,19 +27,20 @@ src/
 
 2. **Configure environment** — copy `.env.example` to `.env` and fill in the values:
 
-   | Variable | Description |
-   |---|---|
-   | `TELEGRAM_BOT_TOKEN` | Bot token from [@BotFather](https://t.me/BotFather) |
-   | `TELEGRAM_WEBHOOK_SECRET` | Secret for validating incoming webhook requests |
-   | `DTEK_COOKIE` | Session cookie for DTEK API |
-   | `DTEK_CSRF_TOKEN` | CSRF token for DTEK API |
-   | `DTEK_CITY` | City ID for DTEK lookup |
-   | `DTEK_STREET` | Street name for DTEK lookup |
-   | `DTEK_HOUSE` | House identifier in DTEK response |
-   | `POWER_CITIES` | Comma-separated city names for Svitlobot regional stats |
-   | `POWER_REGION` | Display name for the region in stats |
+   | Variable                  | Description                                             |
+   | ------------------------- | ------------------------------------------------------- |
+   | `TELEGRAM_BOT_TOKEN`      | Bot token from [@BotFather](https://t.me/BotFather)     |
+   | `TELEGRAM_WEBHOOK_SECRET` | Secret for validating incoming webhook requests         |
+   | `DTEK_COOKIE`             | Session cookie for DTEK API                             |
+   | `DTEK_CSRF_TOKEN`         | CSRF token for DTEK API                                 |
+   | `DTEK_CITY`               | City ID for DTEK lookup                                 |
+   | `DTEK_STREET`             | Street name for DTEK lookup                             |
+   | `DTEK_HOUSE`              | House identifier in DTEK response                       |
+   | `POWER_CITIES`            | Comma-separated city names for Svitlobot regional stats |
+   | `POWER_REGION`            | Display name for the region in stats                    |
 
 3. **Deploy**
+
    ```sh
    npm run deploy
    ```
@@ -47,12 +49,12 @@ src/
 
 ## Scripts
 
-| Command | Description |
-|---|---|
-| `npm test` | Run tests (Jest) |
-| `npm run lint` | Lint with ESLint |
+| Command          | Description                     |
+| ---------------- | ------------------------------- |
+| `npm test`       | Run tests (Jest)                |
+| `npm run lint`   | Lint with ESLint                |
 | `npm run format` | Fix lint + format with Prettier |
-| `npm run deploy` | Deploy to Vercel |
+| `npm run deploy` | Deploy to Vercel                |
 
 ## License
 
