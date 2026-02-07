@@ -4,12 +4,6 @@ const DTEK_API_HEADERS = {
   accept: "application/json, text/javascript, */*; q=0.01",
   "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
   "x-requested-with": "XMLHttpRequest",
-  "sec-ch-ua": `"Chromium";v="142", "Google Chrome";v="142", "Not_A Brand";v="99"`,
-  "sec-ch-ua-mobile": "?0",
-  "sec-ch-ua-platform": '"Windows"',
-  "sec-fetch-dest": "empty",
-  "sec-fetch-mode": "cors",
-  "sec-fetch-site": "same-origin",
   Referer: "https://www.dtek-krem.com.ua/ua/shutdowns",
   "User-Agent":
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
