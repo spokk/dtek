@@ -137,3 +137,6 @@ dist
 
 # vercel
 .vercel
+
+# Local notes
+IMPROVEMENTS.md
