@@ -3,7 +3,7 @@ import { fetchSvitlobotOutageData } from "../infrastructure/svitlobotApi.js";
 import { withRetry } from "../utils/httpClient.js";
 import { getCurrentUADateTime } from "../utils/dateUtils.js";
 import { getRegionalPowerStats, parsePowerRow } from "../utils/powerUtils.js";
-import { getHouseDataFromResponse } from "../helpers.js";
+import { getHouseDataFromResponse } from "../utils/helpers.js";
 
 const RETRY_LIMITS = {
   DTEK: 10,
