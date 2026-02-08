@@ -3,57 +3,58 @@ import { toUADayMonthFromUnix } from "../../utils/dateUtils.js";
 const STATUS_ICONS = {
   yes: "🟢",
   no: "🔴",
-  first: "🔴",
-  second: "🟢",
   mfirst: "🟡",
   msecond: "🟡",
 };
 
 const createSegment = (from, to, status) => ({ from, to, status });
 
-const splitHalfHourSegment = (start, end, status) => {
-  const halfHour = start.replace(":00", ":30");
+const pad = (n) => String(n).padStart(2, "0");
 
-  if (status === "first") {
-    return [createSegment(start, halfHour, "no"), createSegment(halfHour, end, "yes")];
+const buildHalfHourSlots = (hoursData) => {
+  const slots = [];
+
+  for (let h = 1; h <= 24; h++) {
+    const status = hoursData[String(h)];
+    const startHour = pad(h - 1);
+
+    const t1 = `${startHour}:00`;
+    const t2 = `${startHour}:30`;
+    const t3 = `${pad(h)}:00`;
+
+    if (status === "yes") {
+      slots.push(createSegment(t1, t3, "yes"));
+    } else if (status === "no") {
+      slots.push(createSegment(t1, t3, "no"));
+    } else if (status === "first") {
+      slots.push(createSegment(t1, t2, "no"));
+      slots.push(createSegment(t2, t3, "yes"));
+    } else if (status === "second") {
+      slots.push(createSegment(t1, t2, "yes"));
+      slots.push(createSegment(t2, t3, "no"));
+    } else if (status === "mfirst") {
+      slots.push(createSegment(t1, t3, "mfirst"));
+    } else if (status === "msecond") {
+      slots.push(createSegment(t1, t3, "msecond"));
+    }
   }
 
-  if (status === "second") {
-    return [createSegment(start, halfHour, "yes"), createSegment(halfHour, end, "no")];
-  }
-
-  return [createSegment(start, end, status)];
-};
-
-const buildSegments = (hoursData, timeZone) => {
-  const segments = [];
-
-  const sortedHours = Object.keys(hoursData).sort((a, b) => a - b);
-
-  for (const hour of sortedHours) {
-    const status = hoursData[hour];
-    const [, start, end] = timeZone[hour];
-
-    const hourSegments = splitHalfHourSegment(start, end, status);
-    segments.push(...hourSegments);
-  }
-
-  return segments;
+  return slots;
 };
 
 const mergeAdjacentSegments = (segments) => {
-  if (segments.length === 0) return [];
+  if (!segments.length) return [];
 
-  const merged = [{ ...segments[0] }];
+  const merged = [segments[0]];
 
   for (let i = 1; i < segments.length; i++) {
-    const current = segments[i];
     const last = merged[merged.length - 1];
+    const current = segments[i];
 
     if (last.status === current.status && last.to === current.from) {
       last.to = current.to;
     } else {
-      merged.push({ ...current });
+      merged.push(current);
     }
   }
 
@@ -61,24 +62,21 @@ const mergeAdjacentSegments = (segments) => {
 };
 
 const formatSegment = (segment, timeType) => {
-  const icon = STATUS_ICONS[segment.status] ?? "🟡";
+  const icon = STATUS_ICONS[segment.status];
   const label = timeType[segment.status];
   return `${icon} ${segment.from} – ${segment.to} — ${label}`;
 };
 
-export const formatScheduleText = (hoursData, timeZone, timeType) => {
-  if (!hoursData || !timeZone || !timeType) return "";
+export const formatScheduleText = (hoursData, _timeZone, timeType) => {
+  if (!hoursData || !timeType) return "";
 
-  const segments = buildSegments(hoursData, timeZone);
-  const merged = mergeAdjacentSegments(segments);
+  const slots = buildHalfHourSlots(hoursData);
+  const merged = mergeAdjacentSegments(slots);
 
-  return merged.map((segment) => formatSegment(segment, timeType)).join("\n");
+  return merged.map((s) => formatSegment(s, timeType)).join("\n");
 };
 
-const hasAnyOutage = (hoursData) => {
-  if (!hoursData) return false;
-  return Object.values(hoursData).some((status) => status !== "yes");
-};
+const hasAnyOutage = (hoursData) => Object.values(hoursData || {}).some((v) => v !== "yes");
 
 export const buildScheduleBlocks = (
   todayUNIX,
@@ -87,21 +85,21 @@ export const buildScheduleBlocks = (
   hoursDataTomorrow,
   preset,
 ) => {
-  const scheduleToday = formatScheduleText(hoursDataToday, preset?.time_zone, preset?.time_type);
+  const blocks = [];
 
-  const blocks = [
-    `<b>🗓 Графік відключень на ${toUADayMonthFromUnix(todayUNIX)}:</b>\n${scheduleToday}`,
-  ];
+  const todayText = formatScheduleText(hoursDataToday, preset?.time_zone, preset?.time_type);
+
+  blocks.push(`<b>🗓 Графік відключень на ${toUADayMonthFromUnix(todayUNIX)}:</b>\n${todayText}`);
 
   if (hasAnyOutage(hoursDataTomorrow)) {
-    const scheduleTomorrow = formatScheduleText(
+    const tomorrowText = formatScheduleText(
       hoursDataTomorrow,
       preset?.time_zone,
       preset?.time_type,
     );
 
     blocks.push(
-      `<b>🗓 Графік відключень на ${toUADayMonthFromUnix(tomorrowUNIX)}:</b>\n${scheduleTomorrow}`,
+      `<b>🗓 Графік відключень на ${toUADayMonthFromUnix(tomorrowUNIX)}:</b>\n${tomorrowText}`,
     );
   }
 

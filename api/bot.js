@@ -2,7 +2,7 @@ import "dotenv/config";
 import { Telegraf } from "telegraf";
 
 import { config } from "../src/config.js";
-import { getOutageScheduleImageBuffer } from "../src/infrastructure/imageService.js";
+import { getOutageImage } from "../src/infrastructure/imageService.js";
 import { getOutageData } from "../src/services/outageService.js";
 import { formatOutageMessage } from "../src/presentation/messageBuilder.js";
 
@@ -14,12 +14,9 @@ bot.command("dtek", async (ctx) => {
 
     await ctx.sendChatAction("typing");
 
-    const [outageData, imageBuffer] = await Promise.all([
-      getOutageData(),
-      getOutageScheduleImageBuffer(),
-    ]);
-
+    const outageData = await getOutageData();
     const caption = formatOutageMessage(outageData);
+    const imageBuffer = await getOutageImage(outageData.dtekResponse);
 
     console.log("DTEK command completed, sending response");
     console.log("Caption: \n", caption);
@@ -30,10 +27,9 @@ bot.command("dtek", async (ctx) => {
       }
 
       await ctx.replyWithPhoto({ source: imageBuffer });
-      return ctx.reply(caption, { parse_mode: "HTML" });
-    } else {
-      return ctx.reply(caption, { parse_mode: "HTML" });
     }
+
+    return ctx.reply(caption, { parse_mode: "HTML" });
   } catch (err) {
     console.error("DTEK command error:", err);
     return ctx.reply("❌ Сталася помилка при отриманні даних");

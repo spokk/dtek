@@ -3,7 +3,7 @@ import { fetchSvitlobotOutageData } from "../infrastructure/svitlobotApi.js";
 import { withRetry } from "../utils/httpClient.js";
 import { getCurrentUADateTime } from "../utils/dateUtils.js";
 import { getRegionalPowerStats, parsePowerRow } from "../utils/powerUtils.js";
-import { getHouseDataFromResponse } from "../utils/helpers.js";
+import { getHouseDataFromResponse, extractTodayUNIX, getHoursData } from "../utils/helpers.js";
 
 const RETRY_LIMITS = {
   DTEK: 10,
@@ -77,4 +77,17 @@ export async function getOutageData() {
   const { dtekData, svitlobotData } = await fetchAllOutageSources(currentDate);
 
   return buildOutageResponse(dtekData, svitlobotData, currentDate);
+}
+
+export function getTodayHoursData(dtekResponse) {
+  const houseData = getHouseDataFromResponse(dtekResponse);
+  const reasonKey = houseData?.sub_type_reason?.[0];
+  const todayUNIX = extractTodayUNIX(dtekResponse.fact);
+
+  if (!todayUNIX || !reasonKey) return null;
+
+  const hoursData = getHoursData(dtekResponse.fact, reasonKey, todayUNIX);
+  if (!hoursData) return null;
+
+  return { hoursData, todayUNIX };
 }

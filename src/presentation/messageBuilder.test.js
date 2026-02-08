@@ -76,7 +76,29 @@ describe("messageBuilder", () => {
     });
 
     it("includes schedule blocks in output", () => {
-      const result = formatOutageMessage(buildOutageData());
+      const result = formatOutageMessage(
+        buildOutageData({
+          dtekResponse: {
+            updateTimestamp: "12:00 15.06.2025",
+            fact: {
+              today: String(todayUNIX),
+              data: {
+                [todayUNIX]: {
+                  GPV1: { 1: "yes", 2: "no" },
+                },
+              },
+            },
+            preset: {
+              sch_names: { GPV1: "Черга 1" },
+              time_zone: timeZone,
+              time_type: timeType,
+            },
+          },
+          houseData: {
+            sub_type_reason: ["GPV1"],
+          },
+        }),
+      );
 
       expect(result).toContain("Графік відключень");
       expect(result).toContain("🟢");
