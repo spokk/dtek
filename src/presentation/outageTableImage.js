@@ -37,10 +37,10 @@ const SPLIT_RATIO = 0.5;
 
 const TITLE_FONT_SIZE = 40;
 const SUBTITLE_FONT_SIZE = 24;
-const HOUR_FONT_SIZE = 36; // Slightly smaller to fit the range
+const HOUR_FONT_SIZE = 40; // Slightly smaller to fit the range
 const LABEL_FONT_SIZE = 22;
 
-const TEXT_SHADOW = "0 2px 4px rgba(0,0,0,0.4)";
+const TEXT_SHADOW = "0 2px 4px rgba(0, 0, 0, 0.6)";
 const LABEL_OPACITY = 0.85;
 
 /* =========================
@@ -72,7 +72,7 @@ const STATUS = {
   },
   no: {
     bg: COLORS.red,
-    label: "нема",
+    label: "немає",
     textColor: COLORS.textLight,
   },
   maybe: {
@@ -205,7 +205,7 @@ const buildSplitCell = (hour, greenFirst) =>
               marginTop: "2px",
               textShadow: TEXT_SHADOW,
             },
-            children: "част.",
+            children: "частково",
           }),
         ],
       }),

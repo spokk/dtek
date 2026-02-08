@@ -11,15 +11,22 @@ const FALLBACK_IMAGE_URL = "https://y2.vyshgorod.in.ua/dtek_data/images/kyiv-reg
 const GOOGLE_FONTS_CSS_URL =
   "https://fonts.googleapis.com/css2?family=Inter:wght@700&subset=cyrillic";
 
-const loadFont = async () => {
-  const css = await fetch(GOOGLE_FONTS_CSS_URL, {
+const fetchGoogleFontsCss = async () => {
+  return fetch(GOOGLE_FONTS_CSS_URL, {
     headers: { "User-Agent": "Mozilla/5.0" },
   }).then((r) => r.text());
+};
 
+const extractFontUrlFromCss = (css) => {
   const match = css.match(/src:\s*url\(([^)]+)\)/);
   if (!match) throw new Error("Failed to parse font URL from Google Fonts CSS");
+  return match[1];
+};
 
-  return fetch(match[1]).then((r) => r.arrayBuffer());
+const loadFont = async () => {
+  const css = await fetchGoogleFontsCss();
+  const fontUrl = extractFontUrlFromCss(css);
+  return fetch(fontUrl).then((r) => r.arrayBuffer());
 };
 
 const generateTableImage = async (hoursData, dateLabel) => {
