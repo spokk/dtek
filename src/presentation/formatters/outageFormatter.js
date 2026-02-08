@@ -41,7 +41,7 @@ function formatPowerOutagePeriod(startInput, endInput) {
 
 const formatOutageDetails = (house, currentDate) => {
   const timeSince = calculateTimeDifference(house.start_date, currentDate) || "Невідомо";
-  const timeUntil = calculateTimeDifference(house.end_date, currentDate) || "Невідомо";
+  const timeUntil = calculateTimeDifference(currentDate, house.end_date) || "Невідомо";
   const powerOutagePeriod = formatPowerOutagePeriod(house.start_date, house.end_date);
 
   return [
