@@ -153,10 +153,9 @@ describe("dateUtils", () => {
       expect(result).toBe("2 год 30 хв");
     });
 
-    it("should calculate absolute difference (order independent)", () => {
-      const result1 = calculateTimeDifference("01.01.2024 10:00", "01.01.2024 12:30");
-      const result2 = calculateTimeDifference("01.01.2024 12:30", "01.01.2024 10:00");
-      expect(result1).toBe(result2);
+    it("should return null when to is before from", () => {
+      const result = calculateTimeDifference("01.01.2024 12:30", "01.01.2024 10:00");
+      expect(result).toBeNull();
     });
 
     it("should return null if first date is invalid", () => {

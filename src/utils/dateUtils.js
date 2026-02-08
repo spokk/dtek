@@ -69,7 +69,9 @@ export const calculateTimeDifference = (from, to) => {
   // Use Luxon to calculate difference
   const dt1 = DateTime.fromJSDate(d1);
   const dt2 = DateTime.fromJSDate(d2);
-  const diffMs = Math.abs(dt2.diff(dt1).as("milliseconds"));
+  const diffMs = dt2.diff(dt1).as("milliseconds");
+
+  if (diffMs < 0) return null;
 
   return formatTimeDifference(diffMs);
 };
