@@ -1,3 +1,19 @@
+const REQUIRED_ENV_VARS = [
+  "TELEGRAM_BOT_TOKEN",
+  "TELEGRAM_WEBHOOK_SECRET",
+  "DTEK_CSRF_TOKEN",
+  "DTEK_COOKIE",
+  "DTEK_CITY",
+  "DTEK_STREET",
+  "DTEK_HOUSE",
+];
+
+// Validate at module load time (cold start) — fail fast before handling any requests
+const missing = REQUIRED_ENV_VARS.filter((name) => !process.env[name]);
+if (missing.length > 0) {
+  throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
+}
+
 export const config = {
   telegram: {
     botToken: process.env.TELEGRAM_BOT_TOKEN,
