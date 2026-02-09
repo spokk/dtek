@@ -97,7 +97,7 @@ describe("messageBuilder", () => {
     it("includes powerStats when provided", () => {
       const result = formatOutageMessage(
         buildOutageData({
-          powerStats: "<b>📊 Регіон:</b> 85% з електропостачанням",
+          powerStats: { region: "Регіон", lightPercent: 85 },
         }),
       );
 

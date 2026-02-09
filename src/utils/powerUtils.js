@@ -85,5 +85,5 @@ export function getRegionalPowerStats(svitlobotEntries) {
   const lightPercent = calculateLightPercent(housesFromRegion);
   const region = config.power.region;
 
-  return `<b>📊 ${region}:</b> ${lightPercent}% з електропостачанням`;
+  return { region, lightPercent };
 }

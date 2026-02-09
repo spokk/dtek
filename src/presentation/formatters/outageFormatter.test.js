@@ -29,11 +29,12 @@ describe("outageFormatter", () => {
       const result = formatNoOutageMessage({
         houseGroup: "Черга 3.2",
         scheduleBlocks: [],
-        powerStats: "⚡ Статистика: 95% часу зі світлом",
+        powerStats: { region: "Регіон", lightPercent: 95 },
         updateTimestamp: "12:00 15.06.2025",
       });
 
-      expect(result).toContain("⚡ Статистика: 95% часу зі світлом");
+      expect(result).toContain("📊 Регіон:");
+      expect(result).toContain("95% з електропостачанням");
     });
 
     it("includes updateTimestamp", () => {
@@ -188,12 +189,13 @@ describe("outageFormatter", () => {
         },
         currentDate: "12:00 15.06.2025",
         scheduleBlocks: ["📅 Графік: 08:00-12:00"],
-        powerStats: "⚡ Статистика: 80% часу зі світлом",
+        powerStats: { region: "Регіон", lightPercent: 80 },
         updateTimestamp: "12:00 15.06.2025",
       });
 
       expect(result).toContain("📅 Графік: 08:00-12:00");
-      expect(result).toContain("⚡ Статистика: 80% часу зі світлом");
+      expect(result).toContain("📊 Регіон:");
+      expect(result).toContain("80% з електропостачанням");
     });
 
     it("filters out falsy parts", () => {

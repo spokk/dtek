@@ -8,6 +8,11 @@ import { escapeHtml } from "../../utils/escapeHtml.js";
 
 const buildMessageParts = (parts) => parts.filter(Boolean).join("\n\n");
 
+const formatPowerStats = (powerStats) => {
+  if (!powerStats) return null;
+  return `<b>📊 ${escapeHtml(powerStats.region)}:</b> ${powerStats.lightPercent}% з електропостачанням`;
+};
+
 function formatPowerOutagePeriod(startInput, endInput) {
   const start = parseUaDateTimeSafe(startInput);
   const end = parseUaDateTimeSafe(endInput);
@@ -58,7 +63,7 @@ export const formatNoOutageMessage = (data) => {
     `⚡️ <b>${escapeHtml(houseGroup)} | Відключень не зафіксовано.</b>`,
     `⚠️ Якщо в даний момент у вас відсутнє світло, імовірно виникла аварійна ситуація, або діють стабілізаційні або екстрені відключення.`,
     ...scheduleBlocks,
-    powerStats,
+    formatPowerStats(powerStats),
     `🕒 Оновлено: <i>${escapeHtml(updateTimestamp)}</i>`,
   ];
 
@@ -72,7 +77,7 @@ export const formatActiveOutageMessage = (data) => {
     `🚨 <b>${escapeHtml(houseGroup)} | Відключення.</b>`,
     ...formatOutageDetails(house, currentDate),
     ...scheduleBlocks,
-    powerStats,
+    formatPowerStats(powerStats),
     `🕒 Оновлено: <i>${escapeHtml(updateTimestamp)}</i>`,
   ];
 
