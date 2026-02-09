@@ -10,7 +10,7 @@
     "lint:fix": "eslint . --fix",
     "prettier": "prettier --write .",
     "format": "npm run lint:fix && npm run prettier",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "dependencies": {
     "@vercel/og": "^0.8.6",
