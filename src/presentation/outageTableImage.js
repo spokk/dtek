@@ -320,6 +320,77 @@ const buildLegend = () =>
    MAIN EXPORT
 ========================= */
 
+export const COMBINED_IMAGE_WIDTH = 1020;
+export const COMBINED_IMAGE_HEIGHT = 1540;
+
+const buildDaySection = (hoursData, subtitle) =>
+  h("div", {
+    style: {
+      ...flex,
+      flexDirection: "column",
+      alignItems: "center",
+      gap: `${IMAGE_GAP}px`,
+    },
+    children: [
+      h("div", {
+        style: {
+          fontSize: `${SUBTITLE_FONT_SIZE}px`,
+          color: COLORS.subtitle,
+        },
+        children: subtitle,
+      }),
+      buildHalfSection(hoursData, HOURS_START),
+      h("div", {
+        style: {
+          width: "90%",
+          height: "2px",
+          backgroundColor: COLORS.divider,
+        },
+      }),
+      buildHalfSection(hoursData, HOURS_START + HOURS_PER_HALF),
+    ],
+  });
+
+export const buildCombinedOutageTableElement = (
+  todayHoursData = {},
+  todayLabel,
+  tomorrowHoursData = {},
+  tomorrowLabel,
+) =>
+  h("div", {
+    style: {
+      ...flex,
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      width: `${COMBINED_IMAGE_WIDTH}px`,
+      height: `${COMBINED_IMAGE_HEIGHT}px`,
+      backgroundColor: COLORS.bg,
+      padding: `${IMAGE_PADDING}px`,
+      gap: `${IMAGE_GAP}px`,
+    },
+    children: [
+      h("div", {
+        style: {
+          fontSize: `${TITLE_FONT_SIZE}px`,
+          fontWeight: "700",
+          color: COLORS.title,
+        },
+        children: "Графік відключень",
+      }),
+      buildDaySection(todayHoursData, `Сьогодні — ${todayLabel}`),
+      h("div", {
+        style: {
+          width: "90%",
+          height: "2px",
+          backgroundColor: COLORS.divider,
+        },
+      }),
+      buildDaySection(tomorrowHoursData, `Завтра — ${tomorrowLabel}`),
+      buildLegend(),
+    ],
+  });
+
 export const buildOutageTableElement = (hoursData = {}, dateLabel) => {
   const titleChildren = [
     h("div", {

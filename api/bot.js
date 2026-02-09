@@ -2,7 +2,7 @@ import "dotenv/config";
 import { Telegraf } from "telegraf";
 
 import { config } from "../src/config.js";
-import { getOutageImages } from "../src/infrastructure/imageService.js";
+import { getOutageImage } from "../src/infrastructure/imageService.js";
 import { getOutageData } from "../src/services/outageService.js";
 import { formatOutageMessage } from "../src/presentation/messageBuilder.js";
 
@@ -16,15 +16,18 @@ bot.command("dtek", async (ctx) => {
 
     const outageData = await getOutageData();
     const outageMessage = formatOutageMessage(outageData);
-    const { todayImage, tomorrowImage } = await getOutageImages(outageData.scheduleData);
+    const image = await getOutageImage(outageData.scheduleData);
 
     console.log("DTEK command completed, sending response");
     console.log("Caption: \n", outageMessage);
 
-    for (const image of [todayImage, tomorrowImage].filter(Boolean)) {
-      await ctx.replyWithPhoto({ source: image });
+    const canUseCaption = image && outageMessage.length < 1024;
+
+    if (canUseCaption) {
+      return ctx.replyWithPhoto({ source: image }, { caption: outageMessage, parse_mode: "HTML" });
     }
 
+    if (image) await ctx.replyWithPhoto({ source: image });
     return ctx.reply(outageMessage, { parse_mode: "HTML" });
   } catch (err) {
     console.error("DTEK command error:", err);

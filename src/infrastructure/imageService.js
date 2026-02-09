@@ -1,8 +1,11 @@
 import { ImageResponse } from "@vercel/og";
 import {
   buildOutageTableElement,
+  buildCombinedOutageTableElement,
   IMAGE_WIDTH,
   IMAGE_HEIGHT,
+  COMBINED_IMAGE_WIDTH,
+  COMBINED_IMAGE_HEIGHT,
 } from "../presentation/outageTableImage.js";
 import { toUADayMonthFromUnix } from "../utils/dateUtils.js";
 
@@ -34,13 +37,12 @@ const loadFont = async () => {
   return fontCache;
 };
 
-const generateTableImage = async (hoursData, dateLabel) => {
+const generateTableImage = async (element, width, height) => {
   const fontData = await loadFont();
-  const element = buildOutageTableElement(hoursData, dateLabel);
 
   const response = new ImageResponse(element, {
-    width: IMAGE_WIDTH,
-    height: IMAGE_HEIGHT,
+    width,
+    height,
     fonts: [{ name: "Inter", data: fontData, weight: 700, style: "normal" }],
   });
 
@@ -61,20 +63,28 @@ const fetchFallbackImage = async () => {
 
 const hasAnyOutage = (hoursData) => Object.values(hoursData || {}).some((v) => v !== "yes");
 
-export const getOutageImages = async (scheduleData) => {
-  const [todayImage, tomorrowImage] = await Promise.all([
-    generateTodayImage(scheduleData),
-    generateTomorrowImage(scheduleData),
-  ]);
-
-  return { todayImage, tomorrowImage };
-};
-
-const generateTodayImage = async (scheduleData) => {
+export const getOutageImage = async (scheduleData) => {
   try {
-    if (scheduleData?.hoursDataToday) {
+    const hasToday = !!scheduleData?.hoursDataToday;
+    const hasTomorrow =
+      !!scheduleData?.hoursDataTomorrow && hasAnyOutage(scheduleData.hoursDataTomorrow);
+
+    if (hasToday && hasTomorrow) {
+      const todayLabel = toUADayMonthFromUnix(scheduleData.todayUNIX);
+      const tomorrowLabel = toUADayMonthFromUnix(scheduleData.tomorrowUNIX);
+      const element = buildCombinedOutageTableElement(
+        scheduleData.hoursDataToday,
+        todayLabel,
+        scheduleData.hoursDataTomorrow,
+        tomorrowLabel,
+      );
+      return await generateTableImage(element, COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT);
+    }
+
+    if (hasToday) {
       const dateLabel = toUADayMonthFromUnix(scheduleData.todayUNIX);
-      return await generateTableImage(scheduleData.hoursDataToday, dateLabel);
+      const element = buildOutageTableElement(scheduleData.hoursDataToday, dateLabel);
+      return await generateTableImage(element, IMAGE_WIDTH, IMAGE_HEIGHT);
     }
   } catch (err) {
     console.error("Generated image failed, trying fallback:", err);
@@ -86,17 +96,4 @@ const generateTodayImage = async (scheduleData) => {
     console.error("Fallback image failed:", err);
     return null;
   }
-};
-
-const generateTomorrowImage = async (scheduleData) => {
-  try {
-    if (scheduleData?.hoursDataTomorrow && hasAnyOutage(scheduleData.hoursDataTomorrow)) {
-      const dateLabel = toUADayMonthFromUnix(scheduleData.tomorrowUNIX);
-      return await generateTableImage(scheduleData.hoursDataTomorrow, dateLabel);
-    }
-  } catch (err) {
-    console.error("Tomorrow image generation failed:", err);
-  }
-
-  return null;
 };
