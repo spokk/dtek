@@ -52,10 +52,10 @@ const formatOutageDetails = (house, currentDate) => {
 };
 
 export const formatNoOutageMessage = (data) => {
-  const { street, houseGroup, scheduleBlocks, powerStats, updateTimestamp } = data;
+  const { houseGroup, scheduleBlocks, powerStats, updateTimestamp } = data;
 
   const parts = [
-    `⚡️ <b>Відключень не зафіксовано: 📍${escapeHtml(street)} | ${escapeHtml(houseGroup)}</b>`,
+    `⚡️ <b>${escapeHtml(houseGroup)} | Відключень не зафіксовано.</b>`,
     `⚠️ Якщо в даний момент у вас відсутнє світло, імовірно виникла аварійна ситуація, або діють стабілізаційні або екстрені відключення.`,
     ...scheduleBlocks,
     powerStats,
@@ -66,11 +66,10 @@ export const formatNoOutageMessage = (data) => {
 };
 
 export const formatActiveOutageMessage = (data) => {
-  const { street, houseGroup, house, currentDate, scheduleBlocks, powerStats, updateTimestamp } =
-    data;
+  const { houseGroup, house, currentDate, scheduleBlocks, powerStats, updateTimestamp } = data;
 
   const parts = [
-    `🚨 <b>Відключення: 📍${escapeHtml(street)} | ${escapeHtml(houseGroup)}</b>`,
+    `🚨 <b>${escapeHtml(houseGroup)} | Відключення.</b>`,
     ...formatOutageDetails(house, currentDate),
     ...scheduleBlocks,
     powerStats,

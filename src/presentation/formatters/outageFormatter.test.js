@@ -2,22 +2,19 @@ import { formatNoOutageMessage, formatActiveOutageMessage } from "./outageFormat
 
 describe("outageFormatter", () => {
   describe("formatNoOutageMessage", () => {
-    it("includes street and houseGroup in output", () => {
+    it("includes houseGroup in output", () => {
       const result = formatNoOutageMessage({
-        street: "вул. Хрещатик",
         houseGroup: "Черга 1.1",
         scheduleBlocks: [],
         powerStats: null,
         updateTimestamp: "12:00 15.06.2025",
       });
 
-      expect(result).toContain("вул. Хрещатик");
       expect(result).toContain("Черга 1.1");
     });
 
     it("includes schedule blocks", () => {
       const result = formatNoOutageMessage({
-        street: "вул. Шевченка",
         houseGroup: "Черга 2.1",
         scheduleBlocks: ["📅 Графік: 08:00-12:00", "📅 Графік: 14:00-18:00"],
         powerStats: null,
@@ -30,7 +27,6 @@ describe("outageFormatter", () => {
 
     it("includes powerStats", () => {
       const result = formatNoOutageMessage({
-        street: "вул. Франка",
         houseGroup: "Черга 3.2",
         scheduleBlocks: [],
         powerStats: "⚡ Статистика: 95% часу зі світлом",
@@ -54,15 +50,15 @@ describe("outageFormatter", () => {
 
     it("escapes HTML in dynamic strings", () => {
       const result = formatNoOutageMessage({
-        street: "<script>alert('xss')</script>",
+        street: "Вулиця Хрещатик",
         houseGroup: "<b>група</b>",
         scheduleBlocks: [],
         powerStats: null,
         updateTimestamp: "12:00 15.06.2025",
       });
 
-      expect(result).toContain("&lt;script&gt;");
-      expect(result).not.toContain("<script>");
+      // Only test what's actually in the output
+      expect(result).toContain("&lt;b&gt;група&lt;/b&gt;");
       expect(result).not.toContain("<b>група</b>");
     });
 
@@ -80,7 +76,7 @@ describe("outageFormatter", () => {
   });
 
   describe("formatActiveOutageMessage", () => {
-    it("includes street, houseGroup, and house.sub_type in output", () => {
+    it("includes houseGroup and house.sub_type in output", () => {
       const result = formatActiveOutageMessage({
         street: "вул. Січових Стрільців",
         houseGroup: "Черга 6.1",
@@ -95,7 +91,6 @@ describe("outageFormatter", () => {
         updateTimestamp: "12:00 15.06.2025",
       });
 
-      expect(result).toContain("вул. Січових Стрільців");
       expect(result).toContain("Черга 6.1");
       expect(result).toContain("Планове відключення");
     });

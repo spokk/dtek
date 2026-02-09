@@ -1,13 +1,4 @@
 import { formatOutageMessage } from "./messageBuilder";
-import { config } from "../config.js";
-
-jest.mock("../config.js", () => ({
-  config: {
-    dtek: {
-      street: "вул. Тестова",
-    },
-  },
-}));
 
 const timeZone = {
   0: ["unused", "00:00", "01:00"],
@@ -54,7 +45,6 @@ describe("messageBuilder", () => {
       const result = formatOutageMessage(buildOutageData());
 
       expect(result).toContain("Відключень не зафіксовано");
-      expect(result).toContain("вул. Тестова");
       expect(result).toContain("Черга 1");
     });
 
@@ -70,9 +60,8 @@ describe("messageBuilder", () => {
         }),
       );
 
-      expect(result).toContain("Відключення:");
+      expect(result).toContain("Відключення.");
       expect(result).toContain("Планове відключення");
-      expect(result).toContain("вул. Тестова");
     });
 
     it("includes schedule blocks in output", () => {
@@ -121,14 +110,6 @@ describe("messageBuilder", () => {
       expect(result).toContain("12:00 15.06.2025");
     });
 
-    it("uses config.dtek.street for street name", () => {
-      config.dtek.street = "вул. Інша";
-      const result = formatOutageMessage(buildOutageData());
-
-      expect(result).toContain("вул. Інша");
-      config.dtek.street = "вул. Тестова";
-    });
-
     it("returns empty schedule when fact.today is invalid", () => {
       const data = buildOutageData();
       data.dtekResponse.fact.today = null;
@@ -149,7 +130,22 @@ describe("messageBuilder", () => {
         }),
       );
 
-      expect(result).toContain("Відключення:");
+      expect(result).toContain("Відключення.");
+      expect(result).toContain("Аварійне");
+    });
+
+    it("handles houseData with only start_date", () => {
+      const result = formatOutageMessage(
+        buildOutageData({
+          houseData: {
+            sub_type_reason: ["GPV1"],
+            sub_type: "Аварійне",
+            start_date: "10:00 15.06.2025",
+          },
+        }),
+      );
+
+      expect(result).toContain("Відключення.");
       expect(result).toContain("Аварійне");
     });
 

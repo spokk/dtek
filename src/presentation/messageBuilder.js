@@ -1,4 +1,3 @@
-import { config } from "../config.js";
 import { addNextDay } from "../utils/dateUtils.js";
 import { buildScheduleBlocks } from "./formatters/scheduleFormatter.js";
 import { formatNoOutageMessage, formatActiveOutageMessage } from "./formatters/outageFormatter.js";
@@ -25,8 +24,6 @@ const buildSchedule = (fact, reasonKey, preset) => {
 };
 
 const extractMessageData = (outageData) => {
-  const street = config.dtek.street;
-
   const { dtekResponse, houseData, powerStats, currentDate } = outageData;
   const { updateTimestamp, fact, preset } = dtekResponse;
 
@@ -35,7 +32,6 @@ const extractMessageData = (outageData) => {
   const scheduleBlocks = buildSchedule(fact, reasonKey, preset);
 
   return {
-    street,
     houseGroup,
     house: houseData,
     currentDate,
