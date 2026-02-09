@@ -4,7 +4,7 @@ import {
   IMAGE_WIDTH,
   IMAGE_HEIGHT,
 } from "../presentation/outageTableImage.js";
-import { getTodayHoursData } from "../services/outageService.js";
+import { extractScheduleData } from "../services/outageService.js";
 import { toUADayMonthFromUnix } from "../utils/dateUtils.js";
 
 const FALLBACK_IMAGE_URL = "https://y2.vyshgorod.in.ua/dtek_data/images/kyiv-region/today.png";
@@ -12,9 +12,7 @@ const FALLBACK_IMAGE_URL = "https://y2.vyshgorod.in.ua/dtek_data/images/kyiv-reg
 // Font cache - persists across function invocations
 let fontCache = null;
 
-// Single image cache with validation
-let cachedImage = null;
-let cachedKey = null;
+const imageCache = new Map();
 
 const GOOGLE_FONTS_CSS_URL =
   "https://fonts.googleapis.com/css2?family=Inter:wght@700&subset=cyrillic";
@@ -40,32 +38,20 @@ const loadFont = async () => {
   return fontCache;
 };
 
-// Create a hash key from the data
 const createCacheKey = (hoursData, dateLabel) => {
   return JSON.stringify({ hoursData, dateLabel });
-};
-
-// Validate that cached image is still valid
-const isCacheValid = (cacheKey) => {
-  return (
-    cachedImage !== null &&
-    cachedKey !== null &&
-    cachedKey === cacheKey &&
-    Buffer.isBuffer(cachedImage) &&
-    cachedImage.length > 0
-  );
 };
 
 const generateTableImage = async (hoursData, dateLabel) => {
   const cacheKey = createCacheKey(hoursData, dateLabel);
 
-  // Check if cached image is valid and matches current data
-  if (isCacheValid(cacheKey)) {
+  const cached = imageCache.get(cacheKey);
+  if (cached && Buffer.isBuffer(cached) && cached.length > 0) {
     console.log("Cache hit - reusing generated image");
-    return cachedImage;
+    return cached;
   }
 
-  console.log(cachedImage ? "Cache invalid - regenerating" : "Cache miss - generating new image");
+  console.log(imageCache.size ? "Cache miss - generating new image" : "Cache empty - generating");
 
   const [fontData, element] = await Promise.all([
     loadFont(),
@@ -80,9 +66,7 @@ const generateTableImage = async (hoursData, dateLabel) => {
 
   const imageBuffer = Buffer.from(await response.arrayBuffer());
 
-  // Replace cache with new image
-  cachedImage = imageBuffer;
-  cachedKey = cacheKey;
+  imageCache.set(cacheKey, imageBuffer);
 
   return imageBuffer;
 };
@@ -99,12 +83,25 @@ const fetchFallbackImage = async () => {
   return Buffer.from(await res.arrayBuffer());
 };
 
-export const getOutageImage = async (dtekResponse) => {
+const hasAnyOutage = (hoursData) => Object.values(hoursData || {}).some((v) => v !== "yes");
+
+export const getOutageImages = async (dtekResponse) => {
+  const scheduleData = extractScheduleData(dtekResponse);
+  imageCache.clear();
+
+  const [todayImage, tomorrowImage] = await Promise.all([
+    generateTodayImage(scheduleData),
+    generateTomorrowImage(scheduleData),
+  ]);
+
+  return { todayImage, tomorrowImage };
+};
+
+const generateTodayImage = async (scheduleData) => {
   try {
-    const result = getTodayHoursData(dtekResponse);
-    if (result) {
-      const dateLabel = toUADayMonthFromUnix(result.todayUNIX);
-      return await generateTableImage(result.hoursData, dateLabel);
+    if (scheduleData?.hoursDataToday) {
+      const dateLabel = toUADayMonthFromUnix(scheduleData.todayUNIX);
+      return await generateTableImage(scheduleData.hoursDataToday, dateLabel);
     }
   } catch (err) {
     console.error("Generated image failed, trying fallback:", err);
@@ -116,4 +113,17 @@ export const getOutageImage = async (dtekResponse) => {
     console.error("Fallback image failed:", err);
     return null;
   }
+};
+
+const generateTomorrowImage = async (scheduleData) => {
+  try {
+    if (scheduleData?.hoursDataTomorrow && hasAnyOutage(scheduleData.hoursDataTomorrow)) {
+      const dateLabel = toUADayMonthFromUnix(scheduleData.tomorrowUNIX);
+      return await generateTableImage(scheduleData.hoursDataTomorrow, dateLabel);
+    }
+  } catch (err) {
+    console.error("Tomorrow image generation failed:", err);
+  }
+
+  return null;
 };

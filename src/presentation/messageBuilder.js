@@ -1,35 +1,22 @@
-import { addNextDay } from "../utils/dateUtils.js";
 import { buildScheduleBlocks } from "./formatters/scheduleFormatter.js";
 import { formatNoOutageMessage, formatActiveOutageMessage } from "./formatters/outageFormatter.js";
-import {
-  extractTodayUNIX,
-  getHouseGroup,
-  getHoursData,
-  hasOutagePeriod,
-} from "../utils/helpers.js";
+import { getHouseGroup, hasOutagePeriod } from "../utils/helpers.js";
+import { extractScheduleData } from "../services/outageService.js";
 
-const buildSchedule = (fact, reasonKey, preset) => {
-  const todayUNIX = extractTodayUNIX(fact);
+const buildSchedule = (scheduleData) => {
+  if (!scheduleData) return [];
 
-  if (!todayUNIX) {
-    console.warn("Invalid or missing fact.today:", fact?.today);
-    return [];
-  }
-
-  const tomorrowUNIX = addNextDay(todayUNIX);
-  const hoursDataToday = getHoursData(fact, reasonKey, todayUNIX);
-  const hoursDataTomorrow = getHoursData(fact, reasonKey, tomorrowUNIX);
-
+  const { todayUNIX, tomorrowUNIX, hoursDataToday, hoursDataTomorrow, preset } = scheduleData;
   return buildScheduleBlocks(todayUNIX, tomorrowUNIX, hoursDataToday, hoursDataTomorrow, preset);
 };
 
 const extractMessageData = (outageData) => {
   const { dtekResponse, houseData, powerStats, currentDate } = outageData;
-  const { updateTimestamp, fact, preset } = dtekResponse;
+  const { updateTimestamp } = dtekResponse;
 
-  const reasonKey = houseData?.sub_type_reason?.[0];
-  const houseGroup = getHouseGroup(houseData, preset);
-  const scheduleBlocks = buildSchedule(fact, reasonKey, preset);
+  const scheduleData = extractScheduleData(dtekResponse, houseData);
+  const houseGroup = getHouseGroup(houseData, scheduleData?.preset);
+  const scheduleBlocks = buildSchedule(scheduleData);
 
   return {
     houseGroup,

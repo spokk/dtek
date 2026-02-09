@@ -1,7 +1,7 @@
 import { fetchDTEKOutageData } from "../infrastructure/dtekApi.js";
 import { fetchSvitlobotOutageData } from "../infrastructure/svitlobotApi.js";
 import { withRetry } from "../utils/httpClient.js";
-import { getCurrentUADateTime } from "../utils/dateUtils.js";
+import { getCurrentUADateTime, addNextDay } from "../utils/dateUtils.js";
 import { getRegionalPowerStats, parsePowerRow } from "../utils/powerUtils.js";
 import { getHouseDataFromResponse, extractTodayUNIX, getHoursData } from "../utils/helpers.js";
 
@@ -79,15 +79,22 @@ export async function getOutageData() {
   return buildOutageResponse(dtekData, svitlobotData, currentDate);
 }
 
-export function getTodayHoursData(dtekResponse) {
-  const houseData = getHouseDataFromResponse(dtekResponse);
-  const reasonKey = houseData?.sub_type_reason?.[0];
-  const todayUNIX = extractTodayUNIX(dtekResponse.fact);
+export function extractScheduleData(dtekResponse, houseData) {
+  const resolvedHouseData = houseData ?? getHouseDataFromResponse(dtekResponse);
+  const reasonKey = resolvedHouseData?.sub_type_reason?.[0];
+  const { fact, preset } = dtekResponse;
+  const todayUNIX = extractTodayUNIX(fact);
 
   if (!todayUNIX || !reasonKey) return null;
 
-  const hoursData = getHoursData(dtekResponse.fact, reasonKey, todayUNIX);
-  if (!hoursData) return null;
+  const tomorrowUNIX = addNextDay(todayUNIX);
 
-  return { hoursData, todayUNIX };
+  return {
+    todayUNIX,
+    tomorrowUNIX,
+    reasonKey,
+    preset,
+    hoursDataToday: getHoursData(fact, reasonKey, todayUNIX),
+    hoursDataTomorrow: getHoursData(fact, reasonKey, tomorrowUNIX),
+  };
 }

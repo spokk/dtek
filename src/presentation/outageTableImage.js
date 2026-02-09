@@ -54,7 +54,7 @@ const COLORS = {
   bg: "#1a1a2e",
   divider: "#334155",
   title: "#e2e8f0",
-  subtitle: "#64748b",
+  subtitle: "#94a3b8",
   legend: "#94a3b8",
   fallback: "#6b7280",
   textLight: "#ffffff",

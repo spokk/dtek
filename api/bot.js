@@ -2,7 +2,7 @@ import "dotenv/config";
 import { Telegraf } from "telegraf";
 
 import { config } from "../src/config.js";
-import { getOutageImage } from "../src/infrastructure/imageService.js";
+import { getOutageImages } from "../src/infrastructure/imageService.js";
 import { getOutageData } from "../src/services/outageService.js";
 import { formatOutageMessage } from "../src/presentation/messageBuilder.js";
 
@@ -15,21 +15,17 @@ bot.command("dtek", async (ctx) => {
     await ctx.sendChatAction("typing");
 
     const outageData = await getOutageData();
-    const caption = formatOutageMessage(outageData);
-    const imageBuffer = await getOutageImage(outageData.dtekResponse);
+    const outageMessage = formatOutageMessage(outageData);
+    const { todayImage, tomorrowImage } = await getOutageImages(outageData.dtekResponse);
 
     console.log("DTEK command completed, sending response");
-    console.log("Caption: \n", caption);
+    console.log("Caption: \n", outageMessage);
 
-    if (imageBuffer) {
-      if (caption.length <= 1024) {
-        return ctx.replyWithPhoto({ source: imageBuffer }, { caption, parse_mode: "HTML" });
-      }
-
-      await ctx.replyWithPhoto({ source: imageBuffer });
+    for (const image of [todayImage, tomorrowImage].filter(Boolean)) {
+      await ctx.replyWithPhoto({ source: image });
     }
 
-    return ctx.reply(caption, { parse_mode: "HTML" });
+    return ctx.reply(outageMessage, { parse_mode: "HTML" });
   } catch (err) {
     console.error("DTEK command error:", err);
     return ctx.reply("❌ Сталася помилка при отриманні даних");
