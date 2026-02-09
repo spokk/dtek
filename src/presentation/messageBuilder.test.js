@@ -13,26 +13,28 @@ const timeType = {
 };
 
 const todayUNIX = 1750032000;
+const tomorrowUNIX = todayUNIX + 86400;
+
+const preset = {
+  sch_names: { GPV1: "Черга 1" },
+  time_zone: timeZone,
+  time_type: timeType,
+};
 
 const buildOutageData = (overrides = {}) => ({
   dtekResponse: {
     updateTimestamp: "12:00 15.06.2025",
-    fact: {
-      today: String(todayUNIX),
-      data: {
-        [todayUNIX]: {
-          GPV1: { 0: "yes", 1: "no" },
-        },
-      },
-    },
-    preset: {
-      sch_names: { GPV1: "Черга 1" },
-      time_zone: timeZone,
-      time_type: timeType,
-    },
   },
   houseData: {
     sub_type_reason: ["GPV1"],
+  },
+  scheduleData: {
+    todayUNIX,
+    tomorrowUNIX,
+    reasonKey: "GPV1",
+    preset,
+    hoursDataToday: { 0: "yes", 1: "no" },
+    hoursDataTomorrow: undefined,
   },
   powerStats: null,
   currentDate: "12:00 15.06.2025",
@@ -67,24 +69,13 @@ describe("messageBuilder", () => {
     it("includes schedule blocks in output", () => {
       const result = formatOutageMessage(
         buildOutageData({
-          dtekResponse: {
-            updateTimestamp: "12:00 15.06.2025",
-            fact: {
-              today: String(todayUNIX),
-              data: {
-                [todayUNIX]: {
-                  GPV1: { 1: "yes", 2: "no" },
-                },
-              },
-            },
-            preset: {
-              sch_names: { GPV1: "Черга 1" },
-              time_zone: timeZone,
-              time_type: timeType,
-            },
-          },
-          houseData: {
-            sub_type_reason: ["GPV1"],
+          scheduleData: {
+            todayUNIX,
+            tomorrowUNIX,
+            reasonKey: "GPV1",
+            preset,
+            hoursDataToday: { 1: "yes", 2: "no" },
+            hoursDataTomorrow: undefined,
           },
         }),
       );
@@ -110,10 +101,12 @@ describe("messageBuilder", () => {
       expect(result).toContain("12:00 15.06.2025");
     });
 
-    it("returns empty schedule when fact.today is invalid", () => {
-      const data = buildOutageData();
-      data.dtekResponse.fact.today = null;
-      const result = formatOutageMessage(data);
+    it("returns empty schedule when scheduleData is null", () => {
+      const result = formatOutageMessage(
+        buildOutageData({
+          scheduleData: null,
+        }),
+      );
 
       expect(result).toContain("Відключень не зафіксовано");
       expect(result).not.toContain("Графік відключень");
@@ -153,6 +146,7 @@ describe("messageBuilder", () => {
       const result = formatOutageMessage(
         buildOutageData({
           houseData: null,
+          scheduleData: null,
         }),
       );
 

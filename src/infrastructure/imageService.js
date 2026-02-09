@@ -4,7 +4,6 @@ import {
   IMAGE_WIDTH,
   IMAGE_HEIGHT,
 } from "../presentation/outageTableImage.js";
-import { extractScheduleData } from "../services/outageService.js";
 import { toUADayMonthFromUnix } from "../utils/dateUtils.js";
 
 const FALLBACK_IMAGE_URL = "https://y2.vyshgorod.in.ua/dtek_data/images/kyiv-region/today.png";
@@ -85,8 +84,7 @@ const fetchFallbackImage = async () => {
 
 const hasAnyOutage = (hoursData) => Object.values(hoursData || {}).some((v) => v !== "yes");
 
-export const getOutageImages = async (dtekResponse) => {
-  const scheduleData = extractScheduleData(dtekResponse);
+export const getOutageImages = async (scheduleData) => {
   imageCache.clear();
 
   const [todayImage, tomorrowImage] = await Promise.all([

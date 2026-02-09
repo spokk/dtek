@@ -63,9 +63,12 @@ async function fetchAllOutageSources(currentDate) {
 }
 
 function buildOutageResponse(dtekResponse, svitlobotData, currentDate) {
+  const houseData = getHouseDataFromResponse(dtekResponse);
+
   return {
     dtekResponse,
-    houseData: getHouseDataFromResponse(dtekResponse),
+    houseData,
+    scheduleData: extractScheduleData(dtekResponse, houseData),
     powerStats: getRegionalPowerStats(svitlobotData),
     currentDate,
   };

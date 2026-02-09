@@ -16,7 +16,7 @@ bot.command("dtek", async (ctx) => {
 
     const outageData = await getOutageData();
     const outageMessage = formatOutageMessage(outageData);
-    const { todayImage, tomorrowImage } = await getOutageImages(outageData.dtekResponse);
+    const { todayImage, tomorrowImage } = await getOutageImages(outageData.scheduleData);
 
     console.log("DTEK command completed, sending response");
     console.log("Caption: \n", outageMessage);
