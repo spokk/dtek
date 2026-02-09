@@ -8,6 +8,14 @@ import { getTodayHoursData } from "../services/outageService.js";
 import { toUADayMonthFromUnix } from "../utils/dateUtils.js";
 
 const FALLBACK_IMAGE_URL = "https://y2.vyshgorod.in.ua/dtek_data/images/kyiv-region/today.png";
+
+// Font cache - persists across function invocations
+let fontCache = null;
+
+// Single image cache with validation
+let cachedImage = null;
+let cachedKey = null;
+
 const GOOGLE_FONTS_CSS_URL =
   "https://fonts.googleapis.com/css2?family=Inter:wght@700&subset=cyrillic";
 
@@ -24,14 +32,45 @@ const extractFontUrlFromCss = (css) => {
 };
 
 const loadFont = async () => {
+  if (fontCache) return fontCache;
+
   const css = await fetchGoogleFontsCss();
   const fontUrl = extractFontUrlFromCss(css);
-  return fetch(fontUrl).then((r) => r.arrayBuffer());
+  fontCache = await fetch(fontUrl).then((r) => r.arrayBuffer());
+  return fontCache;
+};
+
+// Create a hash key from the data
+const createCacheKey = (hoursData, dateLabel) => {
+  return JSON.stringify({ hoursData, dateLabel });
+};
+
+// Validate that cached image is still valid
+const isCacheValid = (cacheKey) => {
+  return (
+    cachedImage !== null &&
+    cachedKey !== null &&
+    cachedKey === cacheKey &&
+    Buffer.isBuffer(cachedImage) &&
+    cachedImage.length > 0
+  );
 };
 
 const generateTableImage = async (hoursData, dateLabel) => {
-  const element = buildOutageTableElement(hoursData, dateLabel);
-  const fontData = await loadFont();
+  const cacheKey = createCacheKey(hoursData, dateLabel);
+
+  // Check if cached image is valid and matches current data
+  if (isCacheValid(cacheKey)) {
+    console.log("Cache hit - reusing generated image");
+    return cachedImage;
+  }
+
+  console.log(cachedImage ? "Cache invalid - regenerating" : "Cache miss - generating new image");
+
+  const [fontData, element] = await Promise.all([
+    loadFont(),
+    Promise.resolve(buildOutageTableElement(hoursData, dateLabel)),
+  ]);
 
   const response = new ImageResponse(element, {
     width: IMAGE_WIDTH,
@@ -39,7 +78,13 @@ const generateTableImage = async (hoursData, dateLabel) => {
     fonts: [{ name: "Inter", data: fontData, weight: 700, style: "normal" }],
   });
 
-  return Buffer.from(await response.arrayBuffer());
+  const imageBuffer = Buffer.from(await response.arrayBuffer());
+
+  // Replace cache with new image
+  cachedImage = imageBuffer;
+  cachedKey = cacheKey;
+
+  return imageBuffer;
 };
 
 const fetchFallbackImage = async () => {
