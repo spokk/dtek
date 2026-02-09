@@ -8,10 +8,7 @@ import { toUADayMonthFromUnix } from "../utils/dateUtils.js";
 
 const FALLBACK_IMAGE_URL = "https://y2.vyshgorod.in.ua/dtek_data/images/kyiv-region/today.png";
 
-// Font cache - persists across function invocations
 let fontCache = null;
-
-const imageCache = new Map();
 
 const GOOGLE_FONTS_CSS_URL =
   "https://fonts.googleapis.com/css2?family=Inter:wght@700&subset=cyrillic";
@@ -37,25 +34,9 @@ const loadFont = async () => {
   return fontCache;
 };
 
-const createCacheKey = (hoursData, dateLabel) => {
-  return JSON.stringify({ hoursData, dateLabel });
-};
-
 const generateTableImage = async (hoursData, dateLabel) => {
-  const cacheKey = createCacheKey(hoursData, dateLabel);
-
-  const cached = imageCache.get(cacheKey);
-  if (cached && Buffer.isBuffer(cached) && cached.length > 0) {
-    console.log("Cache hit - reusing generated image");
-    return cached;
-  }
-
-  console.log(imageCache.size ? "Cache miss - generating new image" : "Cache empty - generating");
-
-  const [fontData, element] = await Promise.all([
-    loadFont(),
-    Promise.resolve(buildOutageTableElement(hoursData, dateLabel)),
-  ]);
+  const fontData = await loadFont();
+  const element = buildOutageTableElement(hoursData, dateLabel);
 
   const response = new ImageResponse(element, {
     width: IMAGE_WIDTH,
@@ -63,11 +44,7 @@ const generateTableImage = async (hoursData, dateLabel) => {
     fonts: [{ name: "Inter", data: fontData, weight: 700, style: "normal" }],
   });
 
-  const imageBuffer = Buffer.from(await response.arrayBuffer());
-
-  imageCache.set(cacheKey, imageBuffer);
-
-  return imageBuffer;
+  return Buffer.from(await response.arrayBuffer());
 };
 
 const fetchFallbackImage = async () => {
@@ -85,8 +62,6 @@ const fetchFallbackImage = async () => {
 const hasAnyOutage = (hoursData) => Object.values(hoursData || {}).some((v) => v !== "yes");
 
 export const getOutageImages = async (scheduleData) => {
-  imageCache.clear();
-
   const [todayImage, tomorrowImage] = await Promise.all([
     generateTodayImage(scheduleData),
     generateTomorrowImage(scheduleData),
