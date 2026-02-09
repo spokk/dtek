@@ -1,4 +1,6 @@
-import { extractScheduleData } from "./outageService.js";
+import { extractScheduleData, getOutageData } from "./outageService.js";
+import { fetchDTEKOutageData } from "../infrastructure/dtekApi.js";
+import { fetchSvitlobotOutageData } from "../infrastructure/svitlobotApi.js";
 import { config } from "../config.js";
 
 jest.mock("../config.js", () => ({
@@ -6,7 +8,23 @@ jest.mock("../config.js", () => ({
     dtek: {
       house: "123",
     },
+    power: {
+      cities: "Ірпінь",
+      region: "Ірпінський",
+    },
   },
+}));
+
+jest.mock("../infrastructure/dtekApi.js", () => ({
+  fetchDTEKOutageData: jest.fn(),
+}));
+
+jest.mock("../infrastructure/svitlobotApi.js", () => ({
+  fetchSvitlobotOutageData: jest.fn(),
+}));
+
+jest.mock("../utils/httpClient.js", () => ({
+  withRetry: jest.fn((fn) => fn()),
 }));
 
 beforeEach(() => {
@@ -118,5 +136,71 @@ describe("extractScheduleData", () => {
     const result = extractScheduleData(buildDtekResponse());
 
     expect(result.tomorrowUNIX - result.todayUNIX).toBe(86400);
+  });
+});
+
+describe("getOutageData", () => {
+  it("returns combined outage response when both sources succeed", async () => {
+    const dtekResponse = buildDtekResponse();
+    const svitlobotData = [{ city: "Ірпінь", lightStatus: 1 }];
+
+    fetchDTEKOutageData.mockResolvedValue(dtekResponse);
+    fetchSvitlobotOutageData.mockResolvedValue(svitlobotData);
+
+    const result = await getOutageData();
+
+    expect(result.dtekResponse).toBe(dtekResponse);
+    expect(result.houseData).toEqual({ sub_type_reason: ["GPV1"] });
+    expect(result.scheduleData).not.toBeNull();
+    expect(result.scheduleData.reasonKey).toBe("GPV1");
+    expect(result.currentDate).toMatch(/\d{2}:\d{2} \d{2}\.\d{2}\.\d{4}/);
+  });
+
+  it("returns empty powerStats when svitlobot fails", async () => {
+    fetchDTEKOutageData.mockResolvedValue(buildDtekResponse());
+    fetchSvitlobotOutageData.mockRejectedValue(new Error("timeout"));
+
+    const result = await getOutageData();
+
+    expect(result.dtekResponse).toBeDefined();
+    expect(result.powerStats).toBeNull();
+  });
+
+  it("returns powerStats when svitlobot returns matching city data", async () => {
+    fetchDTEKOutageData.mockResolvedValue(buildDtekResponse());
+    fetchSvitlobotOutageData.mockResolvedValue([
+      { city: "Ірпінь", lightStatus: 1 },
+      { city: "Ірпінь", lightStatus: 0 },
+    ]);
+
+    const result = await getOutageData();
+
+    expect(result.powerStats).toEqual({
+      region: "Ірпінський",
+      lightPercent: 50,
+    });
+  });
+
+  it("throws when DTEK data is unavailable (returns falsy)", async () => {
+    fetchDTEKOutageData.mockResolvedValue(null);
+    fetchSvitlobotOutageData.mockResolvedValue([]);
+
+    await expect(getOutageData()).rejects.toThrow("DTEK data unavailable");
+  });
+
+  it("throws when DTEK API rejects", async () => {
+    fetchDTEKOutageData.mockRejectedValue(new Error("DTEK API HTTP error 500"));
+    fetchSvitlobotOutageData.mockResolvedValue([]);
+
+    await expect(getOutageData()).rejects.toThrow("DTEK API HTTP error 500");
+  });
+
+  it("returns empty svitlobotData when svitlobot returns null", async () => {
+    fetchDTEKOutageData.mockResolvedValue(buildDtekResponse());
+    fetchSvitlobotOutageData.mockResolvedValue(null);
+
+    const result = await getOutageData();
+
+    expect(result.powerStats).toBeNull();
   });
 });

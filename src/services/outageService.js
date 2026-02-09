@@ -2,7 +2,7 @@ import { fetchDTEKOutageData } from "../infrastructure/dtekApi.js";
 import { fetchSvitlobotOutageData } from "../infrastructure/svitlobotApi.js";
 import { withRetry } from "../utils/httpClient.js";
 import { getCurrentUADateTime, addNextDay } from "../utils/dateUtils.js";
-import { getRegionalPowerStats, parsePowerRow } from "../utils/powerUtils.js";
+import { getRegionalPowerStats } from "../utils/powerUtils.js";
 import { getHouseDataFromResponse, extractTodayUNIX, getHoursData } from "../utils/helpers.js";
 
 const RETRY_LIMITS = {
@@ -32,11 +32,7 @@ async function fetchSvitlobot() {
       "Fetch Svitlobot Outage Data.",
     );
 
-    if (typeof result === "string") {
-      return result.trim().split("\n").map(parsePowerRow).filter(Boolean);
-    }
-
-    return [];
+    return result ?? [];
   } catch (error) {
     console.warn("Svitlobot data unavailable:", error.message);
     return [];

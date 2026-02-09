@@ -1,3 +1,5 @@
+import { parsePowerRow } from "../utils/powerUtils.js";
+
 const SVITLO_API_URL = "https://api.svitlobot.in.ua/website/getChannelsForMap";
 
 export const fetchSvitlobotOutageData = async () => {
@@ -24,5 +26,5 @@ export const fetchSvitlobotOutageData = async () => {
 
   const text = await response.text();
 
-  return text;
+  return text.trim().split("\n").map(parsePowerRow).filter(Boolean);
 };
