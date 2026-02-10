@@ -320,26 +320,169 @@ const buildLegend = () =>
    MAIN EXPORT
 ========================= */
 
-export const COMBINED_IMAGE_WIDTH = 1020;
-export const COMBINED_IMAGE_HEIGHT = 1540;
+/* =========================
+   COMBINED IMAGE CONSTANTS
+========================= */
 
-const buildDaySection = (hoursData, subtitle) =>
+const COMBINED_CELL_SIZE = 75;
+const COMBINED_CELL_GAP = 6;
+const COMBINED_CELL_RADIUS = 10;
+const COMBINED_HOUR_FONT_SIZE = 20;
+const COMBINED_LABEL_FONT_SIZE = 12;
+const COMBINED_GAP = 6;
+
+export const COMBINED_IMAGE_WIDTH = 1100;
+export const COMBINED_IMAGE_HEIGHT = 540;
+
+/* =========================
+   COMBINED CELL / GRID BUILDERS
+========================= */
+
+const combinedCellBaseStyle = {
+  ...flex,
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  width: `${COMBINED_CELL_SIZE}px`,
+  height: `${COMBINED_CELL_SIZE}px`,
+  borderRadius: `${COMBINED_CELL_RADIUS}px`,
+};
+
+const combinedHourText = (hour, color) =>
+  el("div", {
+    style: {
+      ...flex,
+      fontSize: `${COMBINED_HOUR_FONT_SIZE}px`,
+      fontWeight: "700",
+      color,
+      textShadow: TEXT_SHADOW,
+    },
+    children: formatTimeRange(hour),
+  });
+
+const buildCombinedSplitCell = (hour, greenFirst) =>
+  el("div", {
+    style: {
+      ...combinedCellBaseStyle,
+      overflow: "hidden",
+      position: "relative",
+    },
+    children: [
+      el("div", {
+        style: {
+          width: "100%",
+          height: `${SPLIT_RATIO * 100}%`,
+          backgroundColor: greenFirst ? COLORS.green : COLORS.red,
+        },
+      }),
+      el("div", {
+        style: {
+          width: "100%",
+          height: `${SPLIT_RATIO * 100}%`,
+          backgroundColor: greenFirst ? COLORS.red : COLORS.green,
+        },
+      }),
+      el("div", {
+        style: {
+          ...flex,
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "absolute",
+          inset: 0,
+        },
+        children: [
+          combinedHourText(hour, COLORS.textLight),
+          el("div", {
+            style: {
+              fontSize: `${COMBINED_LABEL_FONT_SIZE}px`,
+              color: COLORS.textLight,
+              opacity: LABEL_OPACITY,
+              marginTop: "2px",
+              textShadow: TEXT_SHADOW,
+            },
+            children: "частково",
+          }),
+        ],
+      }),
+    ],
+  });
+
+const buildCombinedSolidCell = (hour, statusDef) =>
+  el("div", {
+    style: {
+      ...combinedCellBaseStyle,
+      backgroundColor: statusDef.bg,
+    },
+    children: [
+      combinedHourText(hour, statusDef.textColor),
+      el("div", {
+        style: {
+          fontSize: `${COMBINED_LABEL_FONT_SIZE}px`,
+          color: statusDef.textColor,
+          opacity: LABEL_OPACITY,
+          marginTop: "2px",
+          textShadow: TEXT_SHADOW,
+        },
+        children: statusDef.label,
+      }),
+    ],
+  });
+
+const buildCombinedCell = (hour, rawStatus) => {
+  const status = STATUS[rawStatus];
+  if (!status) {
+    return buildCombinedSolidCell(hour, {
+      bg: COLORS.fallback,
+      label: "—",
+      textColor: COLORS.textLight,
+    });
+  }
+  if (status.split === "green-first") return buildCombinedSplitCell(hour, true);
+  if (status.split === "red-first") return buildCombinedSplitCell(hour, false);
+  return buildCombinedSolidCell(hour, status);
+};
+
+const buildCombinedRow = (hoursData, startHour) =>
+  el("div", {
+    style: { ...flex, flexDirection: "row", gap: `${COMBINED_CELL_GAP}px` },
+    children: Array.from({ length: COLS }, (_, i) => {
+      const displayHour = startHour + i;
+      const dataKey = normalizeHour(displayHour + 1);
+      return buildCombinedCell(displayHour, hoursData[dataKey] ?? "no");
+    }),
+  });
+
+const buildCombinedHalfSection = (hoursData, startHour) =>
   el("div", {
     style: {
       ...flex,
       flexDirection: "column",
       alignItems: "center",
-      gap: `${IMAGE_GAP}px`,
+      gap: `${COMBINED_CELL_GAP}px`,
+    },
+    children: Array.from({ length: ROWS_PER_HALF }, (_, i) =>
+      buildCombinedRow(hoursData, startHour + i * COLS),
+    ),
+  });
+
+const buildDayColumn = (hoursData, subtitle) =>
+  el("div", {
+    style: {
+      ...flex,
+      flexDirection: "column",
+      alignItems: "center",
+      gap: `${COMBINED_GAP}px`,
     },
     children: [
       el("div", {
         style: {
-          fontSize: `${SUBTITLE_FONT_SIZE}px`,
+          fontSize: "20px",
           color: COLORS.subtitle,
         },
         children: subtitle,
       }),
-      buildHalfSection(hoursData, HOURS_START),
+      buildCombinedHalfSection(hoursData, HOURS_START),
       el("div", {
         style: {
           width: "90%",
@@ -347,7 +490,7 @@ const buildDaySection = (hoursData, subtitle) =>
           backgroundColor: COLORS.divider,
         },
       }),
-      buildHalfSection(hoursData, HOURS_START + HOURS_PER_HALF),
+      buildCombinedHalfSection(hoursData, HOURS_START + HOURS_PER_HALF),
     ],
   });
 
@@ -366,27 +509,38 @@ export const buildCombinedOutageTableElement = (
       width: `${COMBINED_IMAGE_WIDTH}px`,
       height: `${COMBINED_IMAGE_HEIGHT}px`,
       backgroundColor: COLORS.bg,
-      padding: `${IMAGE_PADDING}px`,
-      gap: `${IMAGE_GAP}px`,
+      padding: "30px 40px",
+      gap: "10px",
     },
     children: [
       el("div", {
         style: {
-          fontSize: `${TITLE_FONT_SIZE}px`,
+          fontSize: "32px",
           fontWeight: "700",
           color: COLORS.title,
         },
         children: "Графік відключень",
       }),
-      buildDaySection(todayHoursData, `Сьогодні — ${todayLabel}`),
       el("div", {
         style: {
-          width: "90%",
-          height: "2px",
-          backgroundColor: COLORS.divider,
+          ...flex,
+          flexDirection: "row",
+          gap: "24px",
+          alignItems: "flex-start",
         },
+        children: [
+          buildDayColumn(todayHoursData, `Сьогодні — ${todayLabel}`),
+          el("div", {
+            style: {
+              width: "2px",
+              height: "90%",
+              backgroundColor: COLORS.divider,
+              alignSelf: "stretch",
+            },
+          }),
+          buildDayColumn(tomorrowHoursData, `Завтра — ${tomorrowLabel}`),
+        ],
       }),
-      buildDaySection(tomorrowHoursData, `Завтра — ${tomorrowLabel}`),
       buildLegend(),
     ],
   });
