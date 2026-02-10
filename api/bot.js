@@ -19,7 +19,6 @@ bot.command("dtek", async (ctx) => {
     const image = await getOutageImage(outageData.scheduleData);
 
     console.log("DTEK command completed, sending response");
-    console.log("Caption: \n", outageMessage);
 
     const canUseCaption = image && outageMessage.length < 1024;
 

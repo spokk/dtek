@@ -8,6 +8,7 @@ import {
   COMBINED_IMAGE_HEIGHT,
 } from "../presentation/outageTableImage.js";
 import { toUADayMonthFromUnix } from "../utils/dateUtils.js";
+import { hasAnyOutage } from "../utils/helpers.js";
 
 const FALLBACK_IMAGE_URL = "https://y2.vyshgorod.in.ua/dtek_data/images/kyiv-region/today.png";
 
@@ -60,8 +61,6 @@ const fetchFallbackImage = async () => {
 
   return Buffer.from(await res.arrayBuffer());
 };
-
-const hasAnyOutage = (hoursData) => Object.values(hoursData || {}).some((v) => v !== "yes");
 
 export const getOutageImage = async (scheduleData) => {
   try {

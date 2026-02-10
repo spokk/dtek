@@ -2,7 +2,13 @@ import { config } from "../config.js";
 
 export const getHouseDataFromResponse = (dtekResponse) => {
   const houseNumber = config.dtek.house;
-  return dtekResponse?.data?.[houseNumber] ?? null;
+  const houseData = dtekResponse?.data?.[houseNumber] ?? null;
+
+  if (!houseData && dtekResponse?.data) {
+    console.error(`DTEK_HOUSE key "${houseNumber}" not found in response data`);
+  }
+
+  return houseData;
 };
 
 export const extractTodayUNIX = (fact) => {
@@ -24,3 +30,5 @@ export const getHoursData = (fact, reasonKey, dayUNIX) => {
 export const hasOutagePeriod = (houseData) => {
   return Boolean(houseData?.sub_type && (houseData?.start_date || houseData?.end_date));
 };
+
+export const hasAnyOutage = (hoursData) => Object.values(hoursData || {}).some((v) => v !== "yes");

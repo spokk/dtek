@@ -2,7 +2,7 @@
    ELEMENT HELPER
 ========================= */
 
-const h = (type, props) => ({ type, props });
+const el = (type, props) => ({ type, props });
 
 /* =========================
    IMAGE CONSTANTS
@@ -132,8 +132,8 @@ const columnStyle = {
    HELPERS
 ========================= */
 
-const normalizeHour = (h) => {
-  const n = Number(h);
+const normalizeHour = (hour) => {
+  const n = Number(hour);
   return n >= 1 && n <= HOURS_PER_DAY ? String(n) : null;
 };
 
@@ -149,7 +149,7 @@ const formatTimeRange = (startHour) => {
 };
 
 const hourText = (hour, color) =>
-  h("div", {
+  el("div", {
     style: {
       ...flex,
       fontSize: `${HOUR_FONT_SIZE}px`,
@@ -165,28 +165,28 @@ const hourText = (hour, color) =>
 ========================= */
 
 const buildSplitCell = (hour, greenFirst) =>
-  h("div", {
+  el("div", {
     style: {
       ...cellBaseStyle,
       overflow: "hidden",
       position: "relative",
     },
     children: [
-      h("div", {
+      el("div", {
         style: {
           width: "100%",
           height: `${SPLIT_RATIO * 100}%`,
           backgroundColor: greenFirst ? COLORS.green : COLORS.red,
         },
       }),
-      h("div", {
+      el("div", {
         style: {
           width: "100%",
           height: `${SPLIT_RATIO * 100}%`,
           backgroundColor: greenFirst ? COLORS.red : COLORS.green,
         },
       }),
-      h("div", {
+      el("div", {
         style: {
           ...flex,
           flexDirection: "column",
@@ -197,7 +197,7 @@ const buildSplitCell = (hour, greenFirst) =>
         },
         children: [
           hourText(hour, COLORS.textLight),
-          h("div", {
+          el("div", {
             style: {
               fontSize: `${LABEL_FONT_SIZE}px`,
               color: COLORS.textLight,
@@ -213,14 +213,14 @@ const buildSplitCell = (hour, greenFirst) =>
   });
 
 const buildSolidCell = (hour, statusDef) =>
-  h("div", {
+  el("div", {
     style: {
       ...cellBaseStyle,
       backgroundColor: statusDef.bg,
     },
     children: [
       hourText(hour, statusDef.textColor),
-      h("div", {
+      el("div", {
         style: {
           fontSize: `${LABEL_FONT_SIZE}px`,
           color: statusDef.textColor,
@@ -256,7 +256,7 @@ const buildCell = (hour, rawStatus) => {
 ========================= */
 
 const buildRow = (hoursData, startHour) =>
-  h("div", {
+  el("div", {
     style: rowStyle,
     children: Array.from({ length: COLS }, (_, i) => {
       const displayHour = startHour + i; // This is what shows on screen (0-23)
@@ -266,7 +266,7 @@ const buildRow = (hoursData, startHour) =>
   });
 
 const buildHalfSection = (hoursData, startHour) =>
-  h("div", {
+  el("div", {
     style: columnStyle,
     children: Array.from({ length: ROWS_PER_HALF }, (_, i) =>
       buildRow(hoursData, startHour + i * COLS),
@@ -278,7 +278,7 @@ const buildHalfSection = (hoursData, startHour) =>
 ========================= */
 
 const buildLegend = () =>
-  h("div", {
+  el("div", {
     style: {
       ...flex,
       flexDirection: "row",
@@ -286,14 +286,14 @@ const buildLegend = () =>
       marginTop: "4px",
     },
     children: LEGEND_ITEMS.map(({ color, label }) =>
-      h("div", {
+      el("div", {
         style: {
           ...flex,
           alignItems: "center",
           gap: "12px",
         },
         children: [
-          h("div", {
+          el("div", {
             style: {
               width: "20px",
               height: "20px",
@@ -304,7 +304,7 @@ const buildLegend = () =>
                   : color,
             },
           }),
-          h("div", {
+          el("div", {
             style: {
               fontSize: "20px",
               color: COLORS.legend,
@@ -324,7 +324,7 @@ export const COMBINED_IMAGE_WIDTH = 1020;
 export const COMBINED_IMAGE_HEIGHT = 1540;
 
 const buildDaySection = (hoursData, subtitle) =>
-  h("div", {
+  el("div", {
     style: {
       ...flex,
       flexDirection: "column",
@@ -332,7 +332,7 @@ const buildDaySection = (hoursData, subtitle) =>
       gap: `${IMAGE_GAP}px`,
     },
     children: [
-      h("div", {
+      el("div", {
         style: {
           fontSize: `${SUBTITLE_FONT_SIZE}px`,
           color: COLORS.subtitle,
@@ -340,7 +340,7 @@ const buildDaySection = (hoursData, subtitle) =>
         children: subtitle,
       }),
       buildHalfSection(hoursData, HOURS_START),
-      h("div", {
+      el("div", {
         style: {
           width: "90%",
           height: "2px",
@@ -357,7 +357,7 @@ export const buildCombinedOutageTableElement = (
   tomorrowHoursData = {},
   tomorrowLabel,
 ) =>
-  h("div", {
+  el("div", {
     style: {
       ...flex,
       flexDirection: "column",
@@ -370,7 +370,7 @@ export const buildCombinedOutageTableElement = (
       gap: `${IMAGE_GAP}px`,
     },
     children: [
-      h("div", {
+      el("div", {
         style: {
           fontSize: `${TITLE_FONT_SIZE}px`,
           fontWeight: "700",
@@ -379,7 +379,7 @@ export const buildCombinedOutageTableElement = (
         children: "Графік відключень",
       }),
       buildDaySection(todayHoursData, `Сьогодні — ${todayLabel}`),
-      h("div", {
+      el("div", {
         style: {
           width: "90%",
           height: "2px",
@@ -393,7 +393,7 @@ export const buildCombinedOutageTableElement = (
 
 export const buildOutageTableElement = (hoursData = {}, dateLabel) => {
   const titleChildren = [
-    h("div", {
+    el("div", {
       style: {
         fontSize: `${TITLE_FONT_SIZE}px`,
         fontWeight: "700",
@@ -405,7 +405,7 @@ export const buildOutageTableElement = (hoursData = {}, dateLabel) => {
 
   if (dateLabel) {
     titleChildren.push(
-      h("div", {
+      el("div", {
         style: {
           fontSize: `${SUBTITLE_FONT_SIZE}px`,
           color: COLORS.subtitle,
@@ -415,7 +415,7 @@ export const buildOutageTableElement = (hoursData = {}, dateLabel) => {
     );
   }
 
-  return h("div", {
+  return el("div", {
     style: {
       ...flex,
       flexDirection: "column",
@@ -428,7 +428,7 @@ export const buildOutageTableElement = (hoursData = {}, dateLabel) => {
       gap: `${IMAGE_GAP}px`,
     },
     children: [
-      h("div", {
+      el("div", {
         style: {
           ...flex,
           flexDirection: "column",
@@ -438,7 +438,7 @@ export const buildOutageTableElement = (hoursData = {}, dateLabel) => {
         children: titleChildren,
       }),
       buildHalfSection(hoursData, HOURS_START),
-      h("div", {
+      el("div", {
         style: {
           width: "90%",
           height: "2px",

@@ -1,4 +1,5 @@
 import { toUADayMonthFromUnix } from "../../utils/dateUtils.js";
+import { hasAnyOutage } from "../../utils/helpers.js";
 
 const STATUS_ICONS = {
   yes: "🟢",
@@ -67,7 +68,7 @@ const formatSegment = (segment, timeType) => {
   return `${icon} ${segment.from} – ${segment.to} — ${label}`;
 };
 
-export const formatScheduleText = (hoursData, _timeZone, timeType) => {
+export const formatScheduleText = (hoursData, timeType) => {
   if (!hoursData || !timeType) return "";
 
   const slots = buildHalfHourSlots(hoursData);
@@ -75,8 +76,6 @@ export const formatScheduleText = (hoursData, _timeZone, timeType) => {
 
   return merged.map((s) => formatSegment(s, timeType)).join("\n");
 };
-
-const hasAnyOutage = (hoursData) => Object.values(hoursData || {}).some((v) => v !== "yes");
 
 export const buildScheduleBlocks = (
   todayUNIX,
@@ -87,16 +86,12 @@ export const buildScheduleBlocks = (
 ) => {
   const blocks = [];
 
-  const todayText = formatScheduleText(hoursDataToday, preset?.time_zone, preset?.time_type);
+  const todayText = formatScheduleText(hoursDataToday, preset?.time_type);
 
   blocks.push(`<b>🗓 Графік відключень на ${toUADayMonthFromUnix(todayUNIX)}:</b>\n${todayText}`);
 
   if (hasAnyOutage(hoursDataTomorrow)) {
-    const tomorrowText = formatScheduleText(
-      hoursDataTomorrow,
-      preset?.time_zone,
-      preset?.time_type,
-    );
+    const tomorrowText = formatScheduleText(hoursDataTomorrow, preset?.time_type);
 
     blocks.push(
       `<b>🗓 Графік відключень на ${toUADayMonthFromUnix(tomorrowUNIX)}:</b>\n${tomorrowText}`,
