@@ -1,7 +1,4 @@
-import { config } from "../config.js";
-
-export const getHouseDataFromResponse = (dtekResponse) => {
-  const houseNumber = config.dtek.house;
+export const getHouseDataFromResponse = (dtekResponse, houseNumber) => {
   const houseData = dtekResponse?.data?.[houseNumber] ?? null;
 
   if (!houseData && dtekResponse?.data) {

@@ -9,8 +9,8 @@ jest.mock("../config.js", () => ({
       house: "123",
     },
     power: {
-      cities: "Ірпінь",
-      region: "Ірпінський",
+      cities: "Місто А",
+      region: "Тестовий район",
     },
   },
 }));
@@ -142,7 +142,7 @@ describe("extractScheduleData", () => {
 describe("getOutageData", () => {
   it("returns combined outage response when both sources succeed", async () => {
     const dtekResponse = buildDtekResponse();
-    const svitlobotData = [{ city: "Ірпінь", lightStatus: 1 }];
+    const svitlobotData = [{ city: "Місто А", lightStatus: 1 }];
 
     fetchDTEKOutageData.mockResolvedValue(dtekResponse);
     fetchSvitlobotOutageData.mockResolvedValue(svitlobotData);
@@ -169,14 +169,14 @@ describe("getOutageData", () => {
   it("returns powerStats when svitlobot returns matching city data", async () => {
     fetchDTEKOutageData.mockResolvedValue(buildDtekResponse());
     fetchSvitlobotOutageData.mockResolvedValue([
-      { city: "Ірпінь", lightStatus: 1 },
-      { city: "Ірпінь", lightStatus: 0 },
+      { city: "Місто А", lightStatus: 1 },
+      { city: "Місто А", lightStatus: 0 },
     ]);
 
     const result = await getOutageData();
 
     expect(result.powerStats).toEqual({
-      region: "Ірпінський",
+      region: "Тестовий район",
       lightPercent: 50,
     });
   });

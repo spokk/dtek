@@ -1,21 +1,11 @@
 import { parsePowerRow, calculateLightPercent, getRegionalPowerStats } from "./powerUtils.js";
-import { config } from "../config.js";
-
-jest.mock("../config.js", () => ({
-  config: {
-    power: {
-      cities: "Ірпінь,Буча",
-      region: "Ірпінський",
-    },
-  },
-}));
 
 const buildRow = (overrides = {}) => {
   const defaults = {
     id: "123",
     light: "1",
     timestamp: "2025-06-16T12:00:00Z",
-    location: "с. Ірпінь->вул. Шевченка 1",
+    location: "с. Місто А->вул. Тестова 1",
     extra: "x",
     people: "5",
     lat: "50.5",
@@ -30,8 +20,8 @@ describe("parsePowerRow", () => {
     const result = parsePowerRow(buildRow());
 
     expect(result).toEqual({
-      city: "Ірпінь",
-      address: "вул. Шевченка 1",
+      city: "Місто А",
+      address: "вул. Тестова 1",
       timestamp: new Date("2025-06-16T12:00:00Z"),
       peopleCount: 5,
       lightStatus: 1,
@@ -68,16 +58,16 @@ describe("parsePowerRow", () => {
   });
 
   it("returns null address when location has no arrow", () => {
-    const result = parsePowerRow(buildRow({ location: "Ірпінь" }));
+    const result = parsePowerRow(buildRow({ location: "Місто А" }));
 
-    expect(result.city).toBe("Ірпінь");
+    expect(result.city).toBe("Місто А");
     expect(result.address).toBeNull();
   });
 
   it("strips 'с.' prefix from city name", () => {
-    const result = parsePowerRow(buildRow({ location: "с.Буча->вул. Героїв" }));
+    const result = parsePowerRow(buildRow({ location: "с.Місто Б->вул. Зразкова" }));
 
-    expect(result.city).toBe("Буча");
+    expect(result.city).toBe("Місто Б");
   });
 
   it("returns null timestamp for invalid date", () => {
@@ -135,28 +125,33 @@ describe("getRegionalPowerStats", () => {
   });
 
   it("returns null when no entries match configured cities", () => {
-    const entries = [{ city: "Київ", lightStatus: 1 }];
+    const entries = [{ city: "Місто В", lightStatus: 1 }];
 
-    expect(getRegionalPowerStats(entries)).toBeNull();
+    expect(
+      getRegionalPowerStats(entries, { cities: "Місто А,Місто Б", region: "Тестовий район" }),
+    ).toBeNull();
   });
 
   it("returns stats for matching cities (case-insensitive)", () => {
     const entries = [
-      { city: "ірпінь", lightStatus: 1 },
-      { city: "Буча", lightStatus: 0 },
+      { city: "місто а", lightStatus: 1 },
+      { city: "Місто Б", lightStatus: 0 },
     ];
 
-    expect(getRegionalPowerStats(entries)).toEqual({
-      region: "Ірпінський",
+    expect(
+      getRegionalPowerStats(entries, { cities: "Місто А,Місто Б", region: "Тестовий район" }),
+    ).toEqual({
+      region: "Тестовий район",
       lightPercent: 50,
     });
   });
 
   it("returns null when cities config is empty", () => {
-    config.power.cities = "";
-
-    expect(getRegionalPowerStats([{ city: "Ірпінь", lightStatus: 1 }])).toBeNull();
-
-    config.power.cities = "Ірпінь,Буча";
+    expect(
+      getRegionalPowerStats([{ city: "Місто А", lightStatus: 1 }], {
+        cities: "",
+        region: "Тестовий район",
+      }),
+    ).toBeNull();
   });
 });

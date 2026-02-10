@@ -5,65 +5,50 @@ import {
   getHoursData,
   hasOutagePeriod,
 } from "./helpers";
-import { config } from "../config.js";
-
-jest.mock("../config.js", () => ({
-  config: {
-    dtek: {
-      house: undefined,
-    },
-  },
-}));
 
 describe("helpers", () => {
   describe("getHouseDataFromResponse", () => {
     it("returns house data when valid response and house number exist", () => {
-      config.dtek.house = "123";
       const dtekResponse = {
         data: {
           123: { name: "House 123", status: "active" },
         },
       };
-      expect(getHouseDataFromResponse(dtekResponse)).toEqual({
+      expect(getHouseDataFromResponse(dtekResponse, "123")).toEqual({
         name: "House 123",
         status: "active",
       });
     });
 
     it("returns null when house number is not in response data", () => {
-      config.dtek.house = "456";
       const dtekResponse = {
         data: {
           123: { name: "House 123" },
         },
       };
-      expect(getHouseDataFromResponse(dtekResponse)).toBeNull();
+      expect(getHouseDataFromResponse(dtekResponse, "456")).toBeNull();
     });
 
     it("returns null when dtekResponse is null", () => {
-      config.dtek.house = "123";
-      expect(getHouseDataFromResponse(null)).toBeNull();
+      expect(getHouseDataFromResponse(null, "123")).toBeNull();
     });
 
     it("returns null when dtekResponse is undefined", () => {
-      config.dtek.house = "123";
-      expect(getHouseDataFromResponse(undefined)).toBeNull();
+      expect(getHouseDataFromResponse(undefined, "123")).toBeNull();
     });
 
     it("returns null when dtekResponse.data is missing", () => {
-      config.dtek.house = "123";
       const dtekResponse = { other: "data" };
-      expect(getHouseDataFromResponse(dtekResponse)).toBeNull();
+      expect(getHouseDataFromResponse(dtekResponse, "123")).toBeNull();
     });
 
     it("returns null when DTEK_HOUSE is not set", () => {
-      config.dtek.house = undefined;
       const dtekResponse = {
         data: {
           123: { name: "House 123" },
         },
       };
-      expect(getHouseDataFromResponse(dtekResponse)).toBeNull();
+      expect(getHouseDataFromResponse(dtekResponse, undefined)).toBeNull();
     });
   });
 

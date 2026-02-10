@@ -4,6 +4,7 @@ import { withRetry } from "../utils/httpClient.js";
 import { getCurrentUADateTime, addNextDay } from "../utils/dateUtils.js";
 import { getRegionalPowerStats } from "../utils/powerUtils.js";
 import { getHouseDataFromResponse, extractTodayUNIX, getHoursData } from "../utils/helpers.js";
+import { config } from "../config.js";
 
 const RETRY_LIMITS = {
   DTEK: 10,
@@ -12,7 +13,7 @@ const RETRY_LIMITS = {
 
 async function fetchDTEK(currentDate) {
   const result = await withRetry(
-    () => fetchDTEKOutageData(currentDate),
+    () => fetchDTEKOutageData(currentDate, config.dtek),
     RETRY_LIMITS.DTEK,
     "Fetching DTEK Outage Data.",
   );
@@ -59,13 +60,13 @@ async function fetchAllOutageSources(currentDate) {
 }
 
 function buildOutageResponse(dtekResponse, svitlobotData, currentDate) {
-  const houseData = getHouseDataFromResponse(dtekResponse);
+  const houseData = getHouseDataFromResponse(dtekResponse, config.dtek.house);
 
   return {
     dtekResponse,
     houseData,
     scheduleData: extractScheduleData(dtekResponse, houseData),
-    powerStats: getRegionalPowerStats(svitlobotData),
+    powerStats: getRegionalPowerStats(svitlobotData, config.power),
     currentDate,
   };
 }
@@ -79,7 +80,7 @@ export async function getOutageData() {
 }
 
 export function extractScheduleData(dtekResponse, houseData) {
-  const resolvedHouseData = houseData ?? getHouseDataFromResponse(dtekResponse);
+  const resolvedHouseData = houseData ?? getHouseDataFromResponse(dtekResponse, config.dtek.house);
   const reasonKey = resolvedHouseData?.sub_type_reason?.[0];
   const { fact, preset } = dtekResponse;
   const todayUNIX = extractTodayUNIX(fact);

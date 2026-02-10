@@ -39,7 +39,7 @@ describe("outageFormatter", () => {
 
     it("includes updateTimestamp", () => {
       const result = formatNoOutageMessage({
-        street: "вул. Лесі Українки",
+        street: "вул. Тестова",
         houseGroup: "Черга 4.1",
         scheduleBlocks: [],
         powerStats: null,
@@ -51,7 +51,7 @@ describe("outageFormatter", () => {
 
     it("escapes HTML in dynamic strings", () => {
       const result = formatNoOutageMessage({
-        street: "Вулиця Хрещатик",
+        street: "Вулиця Зразкова",
         houseGroup: "<b>група</b>",
         scheduleBlocks: [],
         powerStats: null,
@@ -65,7 +65,7 @@ describe("outageFormatter", () => {
 
     it("filters out falsy parts", () => {
       const result = formatNoOutageMessage({
-        street: "вул. Бандери",
+        street: "вул. Перша",
         houseGroup: "Черга 5.1",
         scheduleBlocks: [],
         powerStats: null,
@@ -79,7 +79,7 @@ describe("outageFormatter", () => {
   describe("formatActiveOutageMessage", () => {
     it("includes houseGroup and house.sub_type in output", () => {
       const result = formatActiveOutageMessage({
-        street: "вул. Січових Стрільців",
+        street: "вул. Друга",
         houseGroup: "Черга 6.1",
         house: {
           sub_type: "Планове відключення",
@@ -98,7 +98,7 @@ describe("outageFormatter", () => {
 
     it("includes outage period when dates are parseable same-day", () => {
       const result = formatActiveOutageMessage({
-        street: "вул. Грушевського",
+        street: "вул. Третя",
         houseGroup: "Черга 1.2",
         house: {
           sub_type: "Аварійне відключення",
@@ -119,7 +119,7 @@ describe("outageFormatter", () => {
 
     it("includes outage period when dates are unparseable", () => {
       const result = formatActiveOutageMessage({
-        street: "вул. Володимирська",
+        street: "вул. Четверта",
         houseGroup: "Черга 2.2",
         house: {
           sub_type: "Невідоме відключення",
@@ -140,7 +140,7 @@ describe("outageFormatter", () => {
 
     it("includes outage period when dates span different days", () => {
       const result = formatActiveOutageMessage({
-        street: "вул. Саксаганського",
+        street: "вул. П'ята",
         houseGroup: "Черга 3.1",
         house: {
           sub_type: "Планове відключення",
@@ -161,7 +161,7 @@ describe("outageFormatter", () => {
 
     it("escapes HTML in house.sub_type", () => {
       const result = formatActiveOutageMessage({
-        street: "вул. Прорізна",
+        street: "вул. Шоста",
         houseGroup: "Черга 4.2",
         house: {
           sub_type: "<img src=x onerror=alert(1)>",
@@ -180,7 +180,7 @@ describe("outageFormatter", () => {
 
     it("includes schedule blocks and powerStats", () => {
       const result = formatActiveOutageMessage({
-        street: "вул. Богдана Хмельницького",
+        street: "вул. Сьома",
         houseGroup: "Черга 5.2",
         house: {
           sub_type: "Стабілізаційне відключення",
@@ -200,7 +200,7 @@ describe("outageFormatter", () => {
 
     it("filters out falsy parts", () => {
       const result = formatActiveOutageMessage({
-        street: "вул. Інститутська",
+        street: "вул. Восьма",
         houseGroup: "Черга 6.2",
         house: {
           sub_type: "Аварійне відключення",

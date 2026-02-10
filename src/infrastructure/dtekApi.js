@@ -1,5 +1,3 @@
-import { config } from "../config.js";
-
 const DTEK_API_URL = "https://www.dtek-krem.com.ua/ua/ajax";
 const DTEK_API_METHOD = "getHomeNum";
 const DTEK_API_HEADERS = {
@@ -11,15 +9,15 @@ const DTEK_API_HEADERS = {
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
 };
 
-export const fetchDTEKOutageData = async (currentDate) => {
+export const fetchDTEKOutageData = async (currentDate, dtekConfig) => {
   const response = await fetch(DTEK_API_URL, {
     signal: AbortSignal.timeout(2000),
     method: "POST",
     cache: "no-store",
     headers: {
       ...DTEK_API_HEADERS,
-      "x-csrf-token": config.dtek.csrfToken,
-      Cookie: config.dtek.cookie,
+      "x-csrf-token": dtekConfig.csrfToken,
+      Cookie: dtekConfig.cookie,
       "Cache-Control": "no-cache, no-store, must-revalidate",
       Pragma: "no-cache",
       Expires: "0",
@@ -27,9 +25,9 @@ export const fetchDTEKOutageData = async (currentDate) => {
     body: new URLSearchParams({
       method: DTEK_API_METHOD,
       "data[0][name]": "city",
-      "data[0][value]": config.dtek.city,
+      "data[0][value]": dtekConfig.city,
       "data[1][name]": "street",
-      "data[1][value]": config.dtek.street,
+      "data[1][value]": dtekConfig.street,
       "data[2][name]": "updateFact",
       "data[2][value]": currentDate,
     }),

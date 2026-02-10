@@ -1,5 +1,3 @@
-import { config } from "../config.js";
-
 const FIELD_INDEX = {
   LIGHT_RAW: 1,
   TIMESTAMP: 2,
@@ -63,10 +61,11 @@ export function calculateLightPercent(houses = []) {
   return Math.round((housesWithPower / houses.length) * 10000) / 100;
 }
 
-export function getRegionalPowerStats(svitlobotEntries) {
+export function getRegionalPowerStats(svitlobotEntries, powerConfig) {
   if (!svitlobotEntries?.length) return null;
+  if (!powerConfig) return null;
 
-  const citiesEnv = config.power.cities;
+  const citiesEnv = powerConfig.cities;
   const cityNames = citiesEnv
     .split(",")
     .map((city) => city.trim().toLowerCase())
@@ -83,7 +82,7 @@ export function getRegionalPowerStats(svitlobotEntries) {
   if (!housesFromRegion.length) return null;
 
   const lightPercent = calculateLightPercent(housesFromRegion);
-  const region = config.power.region;
+  const region = powerConfig.region;
 
   return { region, lightPercent };
 }
