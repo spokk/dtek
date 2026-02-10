@@ -13,6 +13,8 @@
 Telegram bot (Telegraf) deployed as a Vercel serverless function (`api/bot.js`).
 
 - `src/config.js` — Environment variable validation and app configuration
+- `src/lib/` — Shared clients and infrastructure wiring
+  - `redis.js` — Upstash Redis client instance
 - `src/infrastructure/` — External API clients (`dtekApi.js`, `svitlobotApi.js`) and image generation service (`imageService.js` using `@vercel/og`)
 - `src/services/` — Business logic (`outageService.js`: outage data aggregation, schedule extraction with retry)
 - `src/presentation/` — Telegram output layer

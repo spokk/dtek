@@ -9,6 +9,7 @@ Deployed as a serverless Vercel function, triggered via Telegram webhook.
 ```
 api/bot.js                  ← Vercel entrypoint, Telegram webhook handler
 src/
+  lib/                      ← Shared clients (Redis)
   infrastructure/           ← External API clients (DTEK, Svitlobot, schedule image)
   services/                 ← Business logic (outage data aggregation)
   presentation/             ← Message formatting (HTML for Telegram)
@@ -38,6 +39,8 @@ src/
    | `DTEK_HOUSE`              | House identifier in DTEK response                       |
    | `POWER_CITIES`            | Comma-separated city names for Svitlobot regional stats |
    | `POWER_REGION`            | Display name for the region in stats                    |
+   | `UPSTASH_REDIS_REST_URL`  | Upstash Redis REST API URL                              |
+   | `UPSTASH_REDIS_REST_TOKEN`| Upstash Redis REST API token                            |
 
 3. **Deploy**
 
