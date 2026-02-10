@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { ImageResponse } from "@vercel/og";
 import {
   buildOutageTableElement,
@@ -9,8 +10,11 @@ import {
 } from "../presentation/outageTableImage.js";
 import { toUADayMonthFromUnix } from "../utils/dateUtils.js";
 import { hasAnyOutage } from "../utils/helpers.js";
+import { redis } from "../lib/redis.js";
 
 const FALLBACK_IMAGE_URL = "https://y2.vyshgorod.in.ua/dtek_data/images/kyiv-region/today.png";
+const CACHE_KEY_PREFIX = "outage-image:";
+const CACHE_TTL_SECONDS = 86400; // 24h
 
 let fontCache = null;
 
@@ -62,13 +66,58 @@ const fetchFallbackImage = async () => {
   return Buffer.from(await res.arrayBuffer());
 };
 
+const buildCacheKey = (scheduleData, hasTomorrow) => {
+  const payload = {
+    today: scheduleData.hoursDataToday,
+    todayUNIX: scheduleData.todayUNIX,
+  };
+
+  if (hasTomorrow) {
+    payload.tomorrow = scheduleData.hoursDataTomorrow;
+    payload.tomorrowUNIX = scheduleData.tomorrowUNIX;
+  }
+
+  const hash = createHash("sha256").update(JSON.stringify(payload)).digest("hex").slice(0, 16);
+  return `${CACHE_KEY_PREFIX}${hash}`;
+};
+
+const getCachedImage = async (cacheKey) => {
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      console.log("Image cache hit:", cacheKey);
+      return Buffer.from(cached, "base64");
+    }
+  } catch (err) {
+    console.error("Redis cache read failed:", err);
+  }
+  return null;
+};
+
+const setCachedImage = async (cacheKey, imageBuffer) => {
+  try {
+    const base64 = imageBuffer.toString("base64");
+    await redis.set(cacheKey, base64, { ex: CACHE_TTL_SECONDS });
+  } catch (err) {
+    console.error("Redis cache write failed:", err);
+  }
+};
+
 export const getOutageImage = async (scheduleData) => {
   try {
     const hasToday = !!scheduleData?.hoursDataToday;
     const hasTomorrow =
       !!scheduleData?.hoursDataTomorrow && hasAnyOutage(scheduleData.hoursDataTomorrow);
 
-    if (hasToday && hasTomorrow) {
+    if (!hasToday) throw new Error("No schedule data");
+
+    const cacheKey = buildCacheKey(scheduleData, hasTomorrow);
+    const cached = await getCachedImage(cacheKey);
+    if (cached) return cached;
+
+    let image;
+
+    if (hasTomorrow) {
       const todayLabel = toUADayMonthFromUnix(scheduleData.todayUNIX);
       const tomorrowLabel = toUADayMonthFromUnix(scheduleData.tomorrowUNIX);
       const element = buildCombinedOutageTableElement(
@@ -77,14 +126,15 @@ export const getOutageImage = async (scheduleData) => {
         scheduleData.hoursDataTomorrow,
         tomorrowLabel,
       );
-      return await generateTableImage(element, COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT);
-    }
-
-    if (hasToday) {
+      image = await generateTableImage(element, COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT);
+    } else {
       const dateLabel = toUADayMonthFromUnix(scheduleData.todayUNIX);
       const element = buildOutageTableElement(scheduleData.hoursDataToday, dateLabel);
-      return await generateTableImage(element, IMAGE_WIDTH, IMAGE_HEIGHT);
+      image = await generateTableImage(element, IMAGE_WIDTH, IMAGE_HEIGHT);
     }
+
+    await setCachedImage(cacheKey, image);
+    return image;
   } catch (err) {
     console.error("Generated image failed, trying fallback:", err);
   }
