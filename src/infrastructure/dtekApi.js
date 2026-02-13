@@ -41,5 +41,9 @@ export const fetchDTEKOutageData = async (currentDate, dtekConfig) => {
 
   const text = await response.text();
 
-  return JSON.parse(text);
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`DTEK API returned non-JSON response: ${text.slice(0, 200)}`);
+  }
 };
