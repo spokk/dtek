@@ -1,3 +1,17 @@
+// === Vercel ===
+export interface VercelRequest {
+  method: string;
+  headers: Record<string, string | string[] | undefined>;
+  body: unknown;
+}
+
+/* eslint-disable no-unused-vars */
+export interface VercelResponse {
+  status(code: number): VercelResponse;
+  send(body: string): void;
+}
+/* eslint-enable no-unused-vars */
+
 // === Config ===
 export interface TelegramConfig {
   botToken: string;

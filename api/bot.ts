@@ -5,19 +5,7 @@ import { config } from "../src/config.js";
 import { getOutageImage } from "../src/infrastructure/imageService.js";
 import { getOutageData } from "../src/services/outageService.js";
 import { formatOutageMessage } from "../src/presentation/messageBuilder.js";
-
-/* eslint-disable no-unused-vars */
-interface VercelRequest {
-  method: string;
-  headers: Record<string, string | string[] | undefined>;
-  body: unknown;
-}
-
-interface VercelResponse {
-  status(code: number): VercelResponse;
-  send(body: string): void;
-}
-/* eslint-enable no-unused-vars */
+import type { VercelRequest, VercelResponse } from "../src/types.js";
 
 const bot = new Telegraf(config.telegram.botToken);
 
