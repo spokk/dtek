@@ -66,7 +66,7 @@ export const formatNoOutageMessage = (data: MessageData): string => {
     `⚠️ Якщо в даний момент у вас відсутнє світло, імовірно виникла аварійна ситуація, або діють стабілізаційні або екстрені відключення.`,
     ...scheduleBlocks,
     formatPowerStats(powerStats),
-    `🕒 Оновлено: <i>${escapeHtml(updateTimestamp!)}</i>`,
+    updateTimestamp ? `🕒 Оновлено: <i>${escapeHtml(updateTimestamp)}</i>` : null,
   ];
 
   return buildMessageParts(parts);
@@ -80,7 +80,7 @@ export const formatActiveOutageMessage = (data: MessageData): string => {
     ...formatOutageDetails(house!, currentDate),
     ...scheduleBlocks,
     formatPowerStats(powerStats),
-    `🕒 Оновлено: <i>${escapeHtml(updateTimestamp!)}</i>`,
+    updateTimestamp ? `🕒 Оновлено: <i>${escapeHtml(updateTimestamp)}</i>` : null,
   ];
 
   return buildMessageParts(parts);

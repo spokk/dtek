@@ -8,6 +8,8 @@ const REQUIRED_ENV_VARS = [
   "DTEK_CITY",
   "DTEK_STREET",
   "DTEK_HOUSE",
+  "UPSTASH_REDIS_REST_URL",
+  "UPSTASH_REDIS_REST_TOKEN",
 ];
 
 const missing = REQUIRED_ENV_VARS.filter((name) => !process.env[name]);
@@ -29,6 +31,6 @@ export const config: AppConfig = {
   },
   power: {
     cities: process.env.POWER_CITIES ?? "",
-    region: process.env.POWER_REGION || "Регіон",
+    region: process.env.POWER_REGION ?? "Регіон",
   },
 };

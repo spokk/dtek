@@ -261,7 +261,7 @@ const buildRow = (hoursData: HoursData, startHour: number) =>
     children: Array.from({ length: COLS }, (_, i) => {
       const displayHour = startHour + i; // This is what shows on screen (0-23)
       const dataKey = normalizeHour(displayHour + 1); // API uses 1-24, so we add 1
-      return buildCell(displayHour, hoursData[dataKey!] ?? "no");
+      return buildCell(displayHour, (dataKey && hoursData[dataKey]) ?? "no");
     }),
   });
 
@@ -448,7 +448,7 @@ const buildCombinedRow = (hoursData: HoursData, startHour: number) =>
     children: Array.from({ length: COLS }, (_, i) => {
       const displayHour = startHour + i;
       const dataKey = normalizeHour(displayHour + 1);
-      return buildCombinedCell(displayHour, hoursData[dataKey!] ?? "no");
+      return buildCombinedCell(displayHour, (dataKey && hoursData[dataKey]) ?? "no");
     }),
   });
 
