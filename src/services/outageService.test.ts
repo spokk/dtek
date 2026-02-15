@@ -24,7 +24,7 @@ jest.mock("../infrastructure/svitlobotApi.js", () => ({
 }));
 
 jest.mock("../utils/httpClient.js", () => ({
-  withRetry: jest.fn((fn) => fn()),
+  withRetry: jest.fn((fn: () => unknown) => fn()),
 }));
 
 beforeEach(() => {
@@ -76,15 +76,15 @@ describe("extractScheduleData", () => {
 
     const result = extractScheduleData(dtekResponse, houseData);
 
-    expect(result.reasonKey).toBe("GPV2");
-    expect(result.hoursDataToday).toEqual({ 1: "yes" });
+    expect(result!.reasonKey).toBe("GPV2");
+    expect(result!.hoursDataToday).toEqual({ 1: "yes" });
   });
 
   it("falls back to getHouseDataFromResponse when houseData is not provided", () => {
     config.dtek.house = "123";
     const result = extractScheduleData(buildDtekResponse());
 
-    expect(result.reasonKey).toBe("GPV1");
+    expect(result!.reasonKey).toBe("GPV1");
   });
 
   it("returns null when fact.today is invalid", () => {
@@ -112,8 +112,8 @@ describe("extractScheduleData", () => {
 
     const result = extractScheduleData(dtekResponse);
 
-    expect(result.hoursDataToday).toEqual({ 1: "yes", 2: "no" });
-    expect(result.hoursDataTomorrow).toBeUndefined();
+    expect(result!.hoursDataToday).toEqual({ 1: "yes", 2: "no" });
+    expect(result!.hoursDataTomorrow).toBeUndefined();
   });
 
   it("returns undefined hoursDataToday when today data missing for reasonKey", () => {
@@ -122,20 +122,20 @@ describe("extractScheduleData", () => {
 
     const result = extractScheduleData(dtekResponse);
 
-    expect(result.hoursDataToday).toBeUndefined();
+    expect(result!.hoursDataToday).toBeUndefined();
   });
 
   it("includes preset from dtekResponse", () => {
     const preset = { time_zone: { 0: ["a"] }, time_type: { yes: "Є" } };
     const result = extractScheduleData(buildDtekResponse({ preset }));
 
-    expect(result.preset).toBe(preset);
+    expect(result!.preset).toBe(preset);
   });
 
   it("computes correct tomorrowUNIX", () => {
     const result = extractScheduleData(buildDtekResponse());
 
-    expect(result.tomorrowUNIX - result.todayUNIX).toBe(86400);
+    expect(result!.tomorrowUNIX - result!.todayUNIX).toBe(86400);
   });
 });
 
@@ -144,21 +144,21 @@ describe("getOutageData", () => {
     const dtekResponse = buildDtekResponse();
     const svitlobotData = [{ city: "Місто А", lightStatus: 1 }];
 
-    fetchDTEKOutageData.mockResolvedValue(dtekResponse);
-    fetchSvitlobotOutageData.mockResolvedValue(svitlobotData);
+    (fetchDTEKOutageData as jest.Mock).mockResolvedValue(dtekResponse);
+    (fetchSvitlobotOutageData as jest.Mock).mockResolvedValue(svitlobotData);
 
     const result = await getOutageData();
 
     expect(result.dtekResponse).toBe(dtekResponse);
     expect(result.houseData).toEqual({ sub_type_reason: ["GPV1"] });
     expect(result.scheduleData).not.toBeNull();
-    expect(result.scheduleData.reasonKey).toBe("GPV1");
+    expect(result.scheduleData!.reasonKey).toBe("GPV1");
     expect(result.currentDate).toMatch(/\d{2}:\d{2} \d{2}\.\d{2}\.\d{4}/);
   });
 
   it("returns empty powerStats when svitlobot fails", async () => {
-    fetchDTEKOutageData.mockResolvedValue(buildDtekResponse());
-    fetchSvitlobotOutageData.mockRejectedValue(new Error("timeout"));
+    (fetchDTEKOutageData as jest.Mock).mockResolvedValue(buildDtekResponse());
+    (fetchSvitlobotOutageData as jest.Mock).mockRejectedValue(new Error("timeout"));
 
     const result = await getOutageData();
 
@@ -167,8 +167,8 @@ describe("getOutageData", () => {
   });
 
   it("returns powerStats when svitlobot returns matching city data", async () => {
-    fetchDTEKOutageData.mockResolvedValue(buildDtekResponse());
-    fetchSvitlobotOutageData.mockResolvedValue([
+    (fetchDTEKOutageData as jest.Mock).mockResolvedValue(buildDtekResponse());
+    (fetchSvitlobotOutageData as jest.Mock).mockResolvedValue([
       { city: "Місто А", lightStatus: 1 },
       { city: "Місто А", lightStatus: 0 },
     ]);
@@ -182,22 +182,22 @@ describe("getOutageData", () => {
   });
 
   it("throws when DTEK data is unavailable (returns falsy)", async () => {
-    fetchDTEKOutageData.mockResolvedValue(null);
-    fetchSvitlobotOutageData.mockResolvedValue([]);
+    (fetchDTEKOutageData as jest.Mock).mockResolvedValue(null);
+    (fetchSvitlobotOutageData as jest.Mock).mockResolvedValue([]);
 
     await expect(getOutageData()).rejects.toThrow("DTEK data unavailable");
   });
 
   it("throws when DTEK API rejects", async () => {
-    fetchDTEKOutageData.mockRejectedValue(new Error("DTEK API HTTP error 500"));
-    fetchSvitlobotOutageData.mockResolvedValue([]);
+    (fetchDTEKOutageData as jest.Mock).mockRejectedValue(new Error("DTEK API HTTP error 500"));
+    (fetchSvitlobotOutageData as jest.Mock).mockResolvedValue([]);
 
     await expect(getOutageData()).rejects.toThrow("DTEK API HTTP error 500");
   });
 
   it("returns empty svitlobotData when svitlobot returns null", async () => {
-    fetchDTEKOutageData.mockResolvedValue(buildDtekResponse());
-    fetchSvitlobotOutageData.mockResolvedValue(null);
+    (fetchDTEKOutageData as jest.Mock).mockResolvedValue(buildDtekResponse());
+    (fetchSvitlobotOutageData as jest.Mock).mockResolvedValue(null);
 
     const result = await getOutageData();
 

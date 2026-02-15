@@ -21,7 +21,7 @@ const preset = {
   time_type: timeType,
 };
 
-const buildOutageData = (overrides = {}) => ({
+const buildOutageData = (overrides: Record<string, any> = {}) => ({
   dtekResponse: {
     updateTimestamp: "12:00 15.06.2025",
   },
@@ -44,7 +44,7 @@ const buildOutageData = (overrides = {}) => ({
 describe("messageBuilder", () => {
   describe("formatOutageMessage", () => {
     it("returns no-outage message when houseData has no outage period", () => {
-      const result = formatOutageMessage(buildOutageData());
+      const result = formatOutageMessage(buildOutageData() as any);
 
       expect(result).toContain("Відключень не зафіксовано");
       expect(result).toContain("Черга 1");
@@ -59,7 +59,7 @@ describe("messageBuilder", () => {
             start_date: "10:00 15.06.2025",
             end_date: "18:00 15.06.2025",
           },
-        }),
+        }) as any,
       );
 
       expect(result).toContain("Відключення.");
@@ -77,7 +77,7 @@ describe("messageBuilder", () => {
             hoursDataToday: { 1: "yes", 2: "no" },
             hoursDataTomorrow: undefined,
           },
-        }),
+        }) as any,
       );
 
       expect(result).toContain("Графік відключень");
@@ -89,14 +89,14 @@ describe("messageBuilder", () => {
       const result = formatOutageMessage(
         buildOutageData({
           powerStats: { region: "Регіон", lightPercent: 85 },
-        }),
+        }) as any,
       );
 
       expect(result).toContain("85% з електропостачанням");
     });
 
     it("includes updateTimestamp", () => {
-      const result = formatOutageMessage(buildOutageData());
+      const result = formatOutageMessage(buildOutageData() as any);
 
       expect(result).toContain("12:00 15.06.2025");
     });
@@ -105,7 +105,7 @@ describe("messageBuilder", () => {
       const result = formatOutageMessage(
         buildOutageData({
           scheduleData: null,
-        }),
+        }) as any,
       );
 
       expect(result).toContain("Відключень не зафіксовано");
@@ -120,7 +120,7 @@ describe("messageBuilder", () => {
             sub_type: "Аварійне",
             end_date: "18:00 15.06.2025",
           },
-        }),
+        }) as any,
       );
 
       expect(result).toContain("Відключення.");
@@ -135,7 +135,7 @@ describe("messageBuilder", () => {
             sub_type: "Аварійне",
             start_date: "10:00 15.06.2025",
           },
-        }),
+        }) as any,
       );
 
       expect(result).toContain("Відключення.");
@@ -147,7 +147,7 @@ describe("messageBuilder", () => {
         buildOutageData({
           houseData: null,
           scheduleData: null,
-        }),
+        }) as any,
       );
 
       expect(result).toContain("Відключень не зафіксовано");

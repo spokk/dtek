@@ -1,15 +1,16 @@
 import { buildScheduleBlocks } from "./formatters/scheduleFormatter.js";
 import { formatNoOutageMessage, formatActiveOutageMessage } from "./formatters/outageFormatter.js";
 import { getHouseGroup, hasOutagePeriod } from "../utils/helpers.js";
+import type { OutageData, ScheduleData, MessageData } from "../types.js";
 
-const buildSchedule = (scheduleData) => {
+const buildSchedule = (scheduleData: ScheduleData | null): string[] => {
   if (!scheduleData) return [];
 
   const { todayUNIX, tomorrowUNIX, hoursDataToday, hoursDataTomorrow, preset } = scheduleData;
   return buildScheduleBlocks(todayUNIX, tomorrowUNIX, hoursDataToday, hoursDataTomorrow, preset);
 };
 
-const extractMessageData = (outageData) => {
+const extractMessageData = (outageData: OutageData): MessageData => {
   const { houseData, scheduleData, powerStats, currentDate } = outageData;
   const { updateTimestamp } = outageData.dtekResponse;
 
@@ -26,7 +27,7 @@ const extractMessageData = (outageData) => {
   };
 };
 
-export const formatOutageMessage = (outageData) => {
+export const formatOutageMessage = (outageData: OutageData): string => {
   const messageData = extractMessageData(outageData);
 
   if (hasOutagePeriod(outageData?.houseData)) {

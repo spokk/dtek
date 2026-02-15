@@ -1,7 +1,7 @@
 {
   "name": "dtekbot",
   "version": "1.0.0",
-  "main": "api/bot.js",
+  "main": "api/bot.ts",
   "type": "module",
   "scripts": {
     "deploy": "vercel --prod",
@@ -10,12 +10,13 @@
     "lint:fix": "eslint . --fix",
     "prettier": "prettier --write .",
     "format": "npm run lint:fix && npm run prettier",
+    "typecheck": "tsc --noEmit",
     "prepare": "husky || true"
   },
   "dependencies": {
     "@upstash/redis": "^1.36.2",
     "@vercel/og": "^0.8.6",
-    "dotenv": "^17.2.4",
+    "dotenv": "^17.3.1",
     "luxon": "^3.7.2",
     "telegraf": "^4.16.3"
   },
@@ -26,6 +27,10 @@
     "@eslint/js": "^10.0.1",
     "@swc/core": "^1.15.11",
     "@swc/jest": "^0.2.39",
+    "@types/jest": "^30.0.0",
+    "@types/luxon": "^3.7.1",
+    "@types/node": "^25.2.3",
+    "@typescript-eslint/parser": "^8.55.0",
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
@@ -34,7 +39,8 @@
     "jest": "^30.2.0",
     "lint-staged": "^16.2.7",
     "prettier": "3.8.1",
-    "prettier-config": "^1.0.0"
+    "prettier-config": "^1.0.0",
+    "typescript": "^5.9.3"
   },
   "lint-staged": {
     "*.{js,mjs,cjs,ts,tsx}": [

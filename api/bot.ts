@@ -6,6 +6,19 @@ import { getOutageImage } from "../src/infrastructure/imageService.js";
 import { getOutageData } from "../src/services/outageService.js";
 import { formatOutageMessage } from "../src/presentation/messageBuilder.js";
 
+/* eslint-disable no-unused-vars */
+interface VercelRequest {
+  method: string;
+  headers: Record<string, string | string[] | undefined>;
+  body: unknown;
+}
+
+interface VercelResponse {
+  status(code: number): VercelResponse;
+  send(body: string): void;
+}
+/* eslint-enable no-unused-vars */
+
 const bot = new Telegraf(config.telegram.botToken);
 
 bot.command("dtek", async (ctx) => {
@@ -34,7 +47,7 @@ bot.command("dtek", async (ctx) => {
   }
 });
 
-export default async (req, res) => {
+export default async (req: VercelRequest, res: VercelResponse) => {
   if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
 
   if (
@@ -45,7 +58,7 @@ export default async (req, res) => {
   }
 
   try {
-    await bot.handleUpdate(req.body);
+    await bot.handleUpdate(req.body as Parameters<typeof bot.handleUpdate>[0]);
     res.status(200).send("OK");
   } catch (err) {
     console.error("Bot handling failed:", err);

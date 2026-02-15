@@ -7,14 +7,16 @@ jest.mock("../utils/powerUtils.js", () => ({
 
 const SVITLO_API_URL = "https://api.svitlobot.in.ua/website/getChannelsForMap";
 
+const mockedParsePowerRow = parsePowerRow as jest.Mock;
+
 beforeEach(() => {
   jest.clearAllMocks();
-  global.fetch = jest.fn();
+  global.fetch = jest.fn() as jest.Mock;
 });
 
 describe("fetchSvitlobotOutageData", () => {
   it("makes GET request to the correct URL", async () => {
-    global.fetch.mockResolvedValue({
+    (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       status: 200,
       statusText: "OK",
@@ -30,7 +32,7 @@ describe("fetchSvitlobotOutageData", () => {
   });
 
   it("returns parsed and filtered data on success", async () => {
-    global.fetch.mockResolvedValue({
+    (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       status: 200,
       statusText: "OK",
@@ -39,15 +41,15 @@ describe("fetchSvitlobotOutageData", () => {
 
     const result = await fetchSvitlobotOutageData();
 
-    expect(parsePowerRow).toHaveBeenCalledTimes(3);
-    expect(parsePowerRow.mock.calls[0][0]).toBe("row1");
-    expect(parsePowerRow.mock.calls[1][0]).toBe("row2");
-    expect(parsePowerRow.mock.calls[2][0]).toBe("row3");
+    expect(mockedParsePowerRow).toHaveBeenCalledTimes(3);
+    expect(mockedParsePowerRow.mock.calls[0][0]).toBe("row1");
+    expect(mockedParsePowerRow.mock.calls[1][0]).toBe("row2");
+    expect(mockedParsePowerRow.mock.calls[2][0]).toBe("row3");
     expect(result).toEqual([{ city: "Test" }, { city: "Test" }, { city: "Test" }]);
   });
 
   it("throws on non-ok response", async () => {
-    global.fetch.mockResolvedValue({
+    (global.fetch as jest.Mock).mockResolvedValue({
       ok: false,
       status: 503,
       statusText: "Service Unavailable",
@@ -57,12 +59,12 @@ describe("fetchSvitlobotOutageData", () => {
   });
 
   it("filters out null results from parsePowerRow", async () => {
-    parsePowerRow
+    mockedParsePowerRow
       .mockReturnValueOnce({ city: "Kyiv" })
       .mockReturnValueOnce(null)
       .mockReturnValueOnce({ city: "Lviv" });
 
-    global.fetch.mockResolvedValue({
+    (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       status: 200,
       statusText: "OK",
@@ -75,14 +77,14 @@ describe("fetchSvitlobotOutageData", () => {
   });
 
   it("handles empty response text", async () => {
-    global.fetch.mockResolvedValue({
+    (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       status: 200,
       statusText: "OK",
       text: () => Promise.resolve("  \n  "),
     });
 
-    parsePowerRow.mockReturnValue(null);
+    mockedParsePowerRow.mockReturnValue(null);
 
     const result = await fetchSvitlobotOutageData();
 

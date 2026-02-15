@@ -5,6 +5,7 @@ const testDtekConfig = {
   cookie: "test-cookie",
   city: "test-city",
   street: "test-street",
+  house: "test-house",
 };
 
 const mockSuccessResponse = (body = { status: "ok" }) => ({
@@ -22,17 +23,17 @@ const mockErrorResponse = (status = 500) => ({
 });
 
 beforeEach(() => {
-  global.fetch = jest.fn();
+  global.fetch = jest.fn() as jest.Mock;
 });
 
 describe("fetchDTEKOutageData", () => {
   it("makes POST request with correct URL, headers, and body params", async () => {
-    global.fetch.mockResolvedValue(mockSuccessResponse());
+    (global.fetch as jest.Mock).mockResolvedValue(mockSuccessResponse());
 
     await fetchDTEKOutageData("12:00 01.01.2025", testDtekConfig);
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
-    const [url, options] = global.fetch.mock.calls[0];
+    const [url, options] = (global.fetch as jest.Mock).mock.calls[0];
     expect(url).toBe("https://www.dtek-krem.com.ua/ua/ajax");
     expect(options.method).toBe("POST");
     expect(options.headers["x-csrf-token"]).toBe("test-csrf-token");
@@ -52,7 +53,7 @@ describe("fetchDTEKOutageData", () => {
 
   it("returns parsed JSON on success", async () => {
     const data = { fact: { today: "1234567890" } };
-    global.fetch.mockResolvedValue(mockSuccessResponse(data));
+    (global.fetch as jest.Mock).mockResolvedValue(mockSuccessResponse(data));
 
     const result = await fetchDTEKOutageData("12:00 01.01.2025", testDtekConfig);
 
@@ -60,7 +61,7 @@ describe("fetchDTEKOutageData", () => {
   });
 
   it("throws on non-ok response", async () => {
-    global.fetch.mockResolvedValue(mockErrorResponse(500));
+    (global.fetch as jest.Mock).mockResolvedValue(mockErrorResponse(500));
 
     await expect(fetchDTEKOutageData("12:00 01.01.2025", testDtekConfig)).rejects.toThrow(
       "DTEK API returned error: 500",
@@ -68,17 +69,17 @@ describe("fetchDTEKOutageData", () => {
   });
 
   it("passes currentDate in the body as updateFact value", async () => {
-    global.fetch.mockResolvedValue(mockSuccessResponse());
+    (global.fetch as jest.Mock).mockResolvedValue(mockSuccessResponse());
 
     await fetchDTEKOutageData("18:30 15.06.2025", testDtekConfig);
 
-    const body = new URLSearchParams(global.fetch.mock.calls[0][1].body);
+    const body = new URLSearchParams((global.fetch as jest.Mock).mock.calls[0][1].body);
     expect(body.get("data[2][name]")).toBe("updateFact");
     expect(body.get("data[2][value]")).toBe("18:30 15.06.2025");
   });
 
   it("throws on invalid JSON response", async () => {
-    global.fetch.mockResolvedValue({
+    (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       status: 200,
       statusText: "OK",

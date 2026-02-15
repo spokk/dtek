@@ -1,8 +1,9 @@
+import type { PowerRow } from "../types.js";
 import { parsePowerRow } from "../utils/powerUtils.js";
 
 const SVITLO_API_URL = "https://api.svitlobot.in.ua/website/getChannelsForMap";
 
-export const fetchSvitlobotOutageData = async () => {
+export const fetchSvitlobotOutageData = async (): Promise<PowerRow[]> => {
   const response = await fetch(SVITLO_API_URL, {
     signal: AbortSignal.timeout(1000),
     method: "GET",
@@ -26,5 +27,9 @@ export const fetchSvitlobotOutageData = async () => {
 
   const text = await response.text();
 
-  return text.trim().split("\n").map(parsePowerRow).filter(Boolean);
+  return text
+    .trim()
+    .split("\n")
+    .map(parsePowerRow)
+    .filter((row): row is PowerRow => Boolean(row));
 };

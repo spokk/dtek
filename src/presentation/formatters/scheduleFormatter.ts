@@ -1,19 +1,24 @@
 import { toUADayMonthFromUnix } from "../../utils/dateUtils.js";
 import { hasAnyOutage } from "../../utils/helpers.js";
+import type { HoursData, DtekPreset, TimeSegment } from "../../types.js";
 
-const STATUS_ICONS = {
+const STATUS_ICONS: Record<string, string> = {
   yes: "🟢",
   no: "🔴",
   mfirst: "🟡",
   msecond: "🟡",
 };
 
-const createSegment = (from, to, status) => ({ from, to, status });
+const createSegment = (from: string, to: string, status: string): TimeSegment => ({
+  from,
+  to,
+  status,
+});
 
-const pad = (n) => String(n).padStart(2, "0");
+const pad = (n: number): string => String(n).padStart(2, "0");
 
-const buildHalfHourSlots = (hoursData) => {
-  const slots = [];
+const buildHalfHourSlots = (hoursData: HoursData): TimeSegment[] => {
+  const slots: TimeSegment[] = [];
 
   for (let h = 1; h <= 24; h++) {
     const status = hoursData[String(h)];
@@ -43,7 +48,7 @@ const buildHalfHourSlots = (hoursData) => {
   return slots;
 };
 
-const mergeAdjacentSegments = (segments) => {
+const mergeAdjacentSegments = (segments: TimeSegment[]): TimeSegment[] => {
   if (!segments.length) return [];
 
   const merged = [segments[0]];
@@ -62,13 +67,16 @@ const mergeAdjacentSegments = (segments) => {
   return merged;
 };
 
-const formatSegment = (segment, timeType) => {
+const formatSegment = (segment: TimeSegment, timeType: Record<string, string>): string => {
   const icon = STATUS_ICONS[segment.status];
   const label = timeType[segment.status];
   return `${icon} ${segment.from} – ${segment.to} — ${label}`;
 };
 
-export const formatScheduleText = (hoursData, timeType) => {
+export const formatScheduleText = (
+  hoursData: HoursData | null | undefined,
+  timeType: Record<string, string> | undefined,
+): string => {
   if (!hoursData || !timeType) return "";
 
   const slots = buildHalfHourSlots(hoursData);
@@ -78,13 +86,13 @@ export const formatScheduleText = (hoursData, timeType) => {
 };
 
 export const buildScheduleBlocks = (
-  todayUNIX,
-  tomorrowUNIX,
-  hoursDataToday,
-  hoursDataTomorrow,
-  preset,
-) => {
-  const blocks = [];
+  todayUNIX: number,
+  tomorrowUNIX: number,
+  hoursDataToday: HoursData | undefined,
+  hoursDataTomorrow: HoursData | undefined,
+  preset: DtekPreset | undefined,
+): string[] => {
+  const blocks: string[] = [];
 
   const todayText = formatScheduleText(hoursDataToday, preset?.time_type);
 

@@ -4,7 +4,7 @@ import {
   getHouseGroup,
   getHoursData,
   hasOutagePeriod,
-} from "./helpers";
+} from "./helpers.js";
 
 describe("helpers", () => {
   describe("getHouseDataFromResponse", () => {

@@ -1,3 +1,5 @@
+import type { DtekConfig, DtekResponse } from "../types.js";
+
 const DTEK_API_URL = "https://www.dtek-krem.com.ua/ua/ajax";
 const DTEK_API_METHOD = "getHomeNum";
 const DTEK_API_HEADERS = {
@@ -9,7 +11,10 @@ const DTEK_API_HEADERS = {
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
 };
 
-export const fetchDTEKOutageData = async (currentDate, dtekConfig) => {
+export const fetchDTEKOutageData = async (
+  currentDate: string,
+  dtekConfig: DtekConfig,
+): Promise<DtekResponse> => {
   const response = await fetch(DTEK_API_URL, {
     signal: AbortSignal.timeout(2000),
     method: "POST",
@@ -42,7 +47,7 @@ export const fetchDTEKOutageData = async (currentDate, dtekConfig) => {
   const text = await response.text();
 
   try {
-    return JSON.parse(text);
+    return JSON.parse(text) as DtekResponse;
   } catch {
     throw new Error(`DTEK API returned non-JSON response: ${text.slice(0, 200)}`);
   }

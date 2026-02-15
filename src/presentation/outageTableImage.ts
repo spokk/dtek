@@ -1,8 +1,10 @@
+import type { HoursData, OgElement, SolidStatusDef, StatusDef } from "../types.js";
+
 /* =========================
    ELEMENT HELPER
 ========================= */
 
-const el = (type, props) => ({ type, props });
+const el = (type: string, props: Record<string, unknown>): OgElement => ({ type, props });
 
 /* =========================
    IMAGE CONSTANTS
@@ -64,7 +66,7 @@ const COLORS = {
    STATUS MODEL
 ========================= */
 
-const STATUS = {
+const STATUS: Record<string, StatusDef> = {
   yes: {
     bg: COLORS.green,
     label: "є",
@@ -132,23 +134,23 @@ const columnStyle = {
    HELPERS
 ========================= */
 
-const normalizeHour = (hour) => {
+const normalizeHour = (hour: string | number): string | null => {
   const n = Number(hour);
   return n >= 1 && n <= HOURS_PER_DAY ? String(n) : null;
 };
 
-const formatHour = (hour) => {
+const formatHour = (hour: number): string => {
   return String(hour).padStart(2, "0");
 };
 
-const formatTimeRange = (startHour) => {
+const formatTimeRange = (startHour: number): string => {
   const start = formatHour(startHour);
   const endHour = startHour + 1;
   const end = endHour === 24 ? "24" : formatHour(endHour);
   return `${start}-${end}`;
 };
 
-const hourText = (hour, color) =>
+const hourText = (hour: number, color: string) =>
   el("div", {
     style: {
       ...flex,
@@ -164,7 +166,7 @@ const hourText = (hour, color) =>
    CELL BUILDERS
 ========================= */
 
-const buildSplitCell = (hour, greenFirst) =>
+const buildSplitCell = (hour: number, greenFirst: boolean) =>
   el("div", {
     style: {
       ...cellBaseStyle,
@@ -212,7 +214,7 @@ const buildSplitCell = (hour, greenFirst) =>
     ],
   });
 
-const buildSolidCell = (hour, statusDef) =>
+const buildSolidCell = (hour: number, statusDef: SolidStatusDef) =>
   el("div", {
     style: {
       ...cellBaseStyle,
@@ -233,7 +235,7 @@ const buildSolidCell = (hour, statusDef) =>
     ],
   });
 
-const buildCell = (hour, rawStatus) => {
+const buildCell = (hour: number, rawStatus: string) => {
   const status = STATUS[rawStatus];
 
   if (!status) {
@@ -245,9 +247,7 @@ const buildCell = (hour, rawStatus) => {
     });
   }
 
-  if (status.split === "green-first") return buildSplitCell(hour, true);
-  if (status.split === "red-first") return buildSplitCell(hour, false);
-
+  if ("split" in status) return buildSplitCell(hour, status.split === "green-first");
   return buildSolidCell(hour, status);
 };
 
@@ -255,17 +255,17 @@ const buildCell = (hour, rawStatus) => {
    GRID BUILDERS
 ========================= */
 
-const buildRow = (hoursData, startHour) =>
+const buildRow = (hoursData: HoursData, startHour: number) =>
   el("div", {
     style: rowStyle,
     children: Array.from({ length: COLS }, (_, i) => {
       const displayHour = startHour + i; // This is what shows on screen (0-23)
       const dataKey = normalizeHour(displayHour + 1); // API uses 1-24, so we add 1
-      return buildCell(displayHour, hoursData[dataKey] ?? "no");
+      return buildCell(displayHour, hoursData[dataKey!] ?? "no");
     }),
   });
 
-const buildHalfSection = (hoursData, startHour) =>
+const buildHalfSection = (hoursData: HoursData, startHour: number) =>
   el("div", {
     style: columnStyle,
     children: Array.from({ length: ROWS_PER_HALF }, (_, i) =>
@@ -348,7 +348,7 @@ const combinedCellBaseStyle = {
   borderRadius: `${COMBINED_CELL_RADIUS}px`,
 };
 
-const combinedHourText = (hour, color) =>
+const combinedHourText = (hour: number, color: string) =>
   el("div", {
     style: {
       ...flex,
@@ -360,7 +360,7 @@ const combinedHourText = (hour, color) =>
     children: formatTimeRange(hour),
   });
 
-const buildCombinedSplitCell = (hour, greenFirst) =>
+const buildCombinedSplitCell = (hour: number, greenFirst: boolean) =>
   el("div", {
     style: {
       ...combinedCellBaseStyle,
@@ -408,7 +408,7 @@ const buildCombinedSplitCell = (hour, greenFirst) =>
     ],
   });
 
-const buildCombinedSolidCell = (hour, statusDef) =>
+const buildCombinedSolidCell = (hour: number, statusDef: SolidStatusDef) =>
   el("div", {
     style: {
       ...combinedCellBaseStyle,
@@ -429,7 +429,7 @@ const buildCombinedSolidCell = (hour, statusDef) =>
     ],
   });
 
-const buildCombinedCell = (hour, rawStatus) => {
+const buildCombinedCell = (hour: number, rawStatus: string) => {
   const status = STATUS[rawStatus];
   if (!status) {
     return buildCombinedSolidCell(hour, {
@@ -438,22 +438,21 @@ const buildCombinedCell = (hour, rawStatus) => {
       textColor: COLORS.textLight,
     });
   }
-  if (status.split === "green-first") return buildCombinedSplitCell(hour, true);
-  if (status.split === "red-first") return buildCombinedSplitCell(hour, false);
+  if ("split" in status) return buildCombinedSplitCell(hour, status.split === "green-first");
   return buildCombinedSolidCell(hour, status);
 };
 
-const buildCombinedRow = (hoursData, startHour) =>
+const buildCombinedRow = (hoursData: HoursData, startHour: number) =>
   el("div", {
     style: { ...flex, flexDirection: "row", gap: `${COMBINED_CELL_GAP}px` },
     children: Array.from({ length: COLS }, (_, i) => {
       const displayHour = startHour + i;
       const dataKey = normalizeHour(displayHour + 1);
-      return buildCombinedCell(displayHour, hoursData[dataKey] ?? "no");
+      return buildCombinedCell(displayHour, hoursData[dataKey!] ?? "no");
     }),
   });
 
-const buildCombinedHalfSection = (hoursData, startHour) =>
+const buildCombinedHalfSection = (hoursData: HoursData, startHour: number) =>
   el("div", {
     style: {
       ...flex,
@@ -466,7 +465,7 @@ const buildCombinedHalfSection = (hoursData, startHour) =>
     ),
   });
 
-const buildDayColumn = (hoursData, subtitle) =>
+const buildDayColumn = (hoursData: HoursData, subtitle: string) =>
   el("div", {
     style: {
       ...flex,
@@ -495,10 +494,10 @@ const buildDayColumn = (hoursData, subtitle) =>
   });
 
 export const buildCombinedOutageTableElement = (
-  todayHoursData = {},
-  todayLabel,
-  tomorrowHoursData = {},
-  tomorrowLabel,
+  todayHoursData: HoursData = {},
+  todayLabel: string,
+  tomorrowHoursData: HoursData = {},
+  tomorrowLabel: string,
 ) =>
   el("div", {
     style: {
@@ -545,7 +544,7 @@ export const buildCombinedOutageTableElement = (
     ],
   });
 
-export const buildOutageTableElement = (hoursData = {}, dateLabel) => {
+export const buildOutageTableElement = (hoursData: HoursData = {}, dateLabel?: string) => {
   const titleChildren = [
     el("div", {
       style: {

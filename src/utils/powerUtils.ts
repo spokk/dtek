@@ -1,3 +1,5 @@
+import type { PowerRow, PowerStats, PowerConfig } from "../types.js";
+
 const FIELD_INDEX = {
   LIGHT_RAW: 1,
   TIMESTAMP: 2,
@@ -5,15 +7,17 @@ const FIELD_INDEX = {
   PEOPLE: 5,
   LAT: 6,
   LON: 7,
-};
+} as const;
 
-function parseLightStatus(value) {
-  if (value === 1) return 1; // power on
-  if (value === 2) return 0; // power off
+function parseLightStatus(value: number): number | null {
+  if (value === 1) return 1;
+  if (value === 2) return 0;
   return null;
 }
 
-function parseLocation(locationRaw) {
+function parseLocation(
+  locationRaw: string | undefined,
+): { city: string; address: string | null } | null {
   if (!locationRaw) return null;
 
   const parts = locationRaw.split("->");
@@ -27,7 +31,7 @@ function parseLocation(locationRaw) {
   };
 }
 
-export function parsePowerRow(row) {
+export function parsePowerRow(row: string): PowerRow | null {
   if (!row) return null;
 
   const fields = row.split(";&&&;");
@@ -53,7 +57,7 @@ export function parsePowerRow(row) {
   };
 }
 
-export function calculateLightPercent(houses = []) {
+export function calculateLightPercent(houses: PowerRow[] = []): number {
   if (!houses.length) return 0;
 
   const housesWithPower = houses.reduce((sum, house) => sum + (house.lightStatus === 1 ? 1 : 0), 0);
@@ -61,7 +65,10 @@ export function calculateLightPercent(houses = []) {
   return Math.round((housesWithPower / houses.length) * 10000) / 100;
 }
 
-export function getRegionalPowerStats(svitlobotEntries, powerConfig) {
+export function getRegionalPowerStats(
+  svitlobotEntries: PowerRow[] | null | undefined,
+  powerConfig: PowerConfig | null | undefined,
+): PowerStats | null {
   if (!svitlobotEntries?.length) return null;
   if (!powerConfig) return null;
 

@@ -28,19 +28,19 @@ src/
 
 2. **Configure environment** — copy `.env.example` to `.env` and fill in the values:
 
-   | Variable                  | Description                                             |
-   | ------------------------- | ------------------------------------------------------- |
-   | `TELEGRAM_BOT_TOKEN`      | Bot token from [@BotFather](https://t.me/BotFather)     |
-   | `TELEGRAM_WEBHOOK_SECRET` | Secret for validating incoming webhook requests         |
-   | `DTEK_COOKIE`             | Session cookie for DTEK API                             |
-   | `DTEK_CSRF_TOKEN`         | CSRF token for DTEK API                                 |
-   | `DTEK_CITY`               | City ID for DTEK lookup                                 |
-   | `DTEK_STREET`             | Street name for DTEK lookup                             |
-   | `DTEK_HOUSE`              | House identifier in DTEK response                       |
-   | `POWER_CITIES`            | Comma-separated city names for Svitlobot regional stats |
-   | `POWER_REGION`            | Display name for the region in stats                    |
-   | `UPSTASH_REDIS_REST_URL`  | Upstash Redis REST API URL                              |
-   | `UPSTASH_REDIS_REST_TOKEN`| Upstash Redis REST API token                            |
+   | Variable                   | Description                                             |
+   | -------------------------- | ------------------------------------------------------- |
+   | `TELEGRAM_BOT_TOKEN`       | Bot token from [@BotFather](https://t.me/BotFather)     |
+   | `TELEGRAM_WEBHOOK_SECRET`  | Secret for validating incoming webhook requests         |
+   | `DTEK_COOKIE`              | Session cookie for DTEK API                             |
+   | `DTEK_CSRF_TOKEN`          | CSRF token for DTEK API                                 |
+   | `DTEK_CITY`                | City ID for DTEK lookup                                 |
+   | `DTEK_STREET`              | Street name for DTEK lookup                             |
+   | `DTEK_HOUSE`               | House identifier in DTEK response                       |
+   | `POWER_CITIES`             | Comma-separated city names for Svitlobot regional stats |
+   | `POWER_REGION`             | Display name for the region in stats                    |
+   | `UPSTASH_REDIS_REST_URL`   | Upstash Redis REST API URL                              |
+   | `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST API token                            |
 
 3. **Deploy**
 

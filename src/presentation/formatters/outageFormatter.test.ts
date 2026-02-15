@@ -8,7 +8,7 @@ describe("outageFormatter", () => {
         scheduleBlocks: [],
         powerStats: null,
         updateTimestamp: "12:00 15.06.2025",
-      });
+      } as any);
 
       expect(result).toContain("Черга 1.1");
     });
@@ -19,7 +19,7 @@ describe("outageFormatter", () => {
         scheduleBlocks: ["📅 Графік: 08:00-12:00", "📅 Графік: 14:00-18:00"],
         powerStats: null,
         updateTimestamp: "12:00 15.06.2025",
-      });
+      } as any);
 
       expect(result).toContain("📅 Графік: 08:00-12:00");
       expect(result).toContain("📅 Графік: 14:00-18:00");
@@ -31,7 +31,7 @@ describe("outageFormatter", () => {
         scheduleBlocks: [],
         powerStats: { region: "Регіон", lightPercent: 95 },
         updateTimestamp: "12:00 15.06.2025",
-      });
+      } as any);
 
       expect(result).toContain("📊 Регіон:");
       expect(result).toContain("95% з електропостачанням");
@@ -44,7 +44,7 @@ describe("outageFormatter", () => {
         scheduleBlocks: [],
         powerStats: null,
         updateTimestamp: "14:30 20.06.2025",
-      });
+      } as any);
 
       expect(result).toContain("14:30 20.06.2025");
     });
@@ -56,7 +56,7 @@ describe("outageFormatter", () => {
         scheduleBlocks: [],
         powerStats: null,
         updateTimestamp: "12:00 15.06.2025",
-      });
+      } as any);
 
       // Only test what's actually in the output
       expect(result).toContain("&lt;b&gt;група&lt;/b&gt;");
@@ -70,7 +70,7 @@ describe("outageFormatter", () => {
         scheduleBlocks: [],
         powerStats: null,
         updateTimestamp: "12:00 15.06.2025",
-      });
+      } as any);
 
       expect(result).not.toContain("\n\n\n");
     });
@@ -90,7 +90,7 @@ describe("outageFormatter", () => {
         scheduleBlocks: [],
         powerStats: null,
         updateTimestamp: "12:00 15.06.2025",
-      });
+      } as any);
 
       expect(result).toContain("Черга 6.1");
       expect(result).toContain("Планове відключення");
@@ -109,7 +109,7 @@ describe("outageFormatter", () => {
         scheduleBlocks: [],
         powerStats: null,
         updateTimestamp: "12:00 15.06.2025",
-      });
+      } as any);
 
       expect(result).toContain("Вимкнення:");
       expect(result).toContain("Відновлення:");
@@ -130,7 +130,7 @@ describe("outageFormatter", () => {
         scheduleBlocks: [],
         powerStats: null,
         updateTimestamp: "12:00 15.06.2025",
-      });
+      } as any);
 
       expect(result).toContain("Вимкнення:");
       expect(result).toContain("Відновлення:");
@@ -151,7 +151,7 @@ describe("outageFormatter", () => {
         scheduleBlocks: [],
         powerStats: null,
         updateTimestamp: "23:00 15.06.2025",
-      });
+      } as any);
 
       expect(result).toContain("Вимкнення:");
       expect(result).toContain("Відновлення:");
@@ -172,7 +172,7 @@ describe("outageFormatter", () => {
         scheduleBlocks: [],
         powerStats: null,
         updateTimestamp: "12:00 15.06.2025",
-      });
+      } as any);
 
       expect(result).toContain("&lt;img");
       expect(result).not.toContain("<img");
@@ -191,7 +191,7 @@ describe("outageFormatter", () => {
         scheduleBlocks: ["📅 Графік: 08:00-12:00"],
         powerStats: { region: "Регіон", lightPercent: 80 },
         updateTimestamp: "12:00 15.06.2025",
-      });
+      } as any);
 
       expect(result).toContain("📅 Графік: 08:00-12:00");
       expect(result).toContain("📊 Регіон:");
@@ -211,7 +211,7 @@ describe("outageFormatter", () => {
         scheduleBlocks: [],
         powerStats: null,
         updateTimestamp: "12:00 15.06.2025",
-      });
+      } as any);
 
       expect(result).not.toContain("\n\n\n");
     });

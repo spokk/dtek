@@ -1,2 +1,2 @@
 #!/bin/sh
-npx lint-staged && npm test -- --bail
+npx lint-staged && npm run typecheck && npm test -- --bail

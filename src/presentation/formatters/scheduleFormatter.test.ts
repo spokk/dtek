@@ -21,7 +21,7 @@ describe("scheduleFormatter", () => {
     });
 
     it("should return empty string when timeType is null", () => {
-      expect(formatScheduleText({ 1: "yes" }, null)).toBe("");
+      expect(formatScheduleText({ 1: "yes" }, null as any)).toBe("");
     });
 
     it("should format a single yes hour with green icon", () => {
@@ -61,13 +61,13 @@ describe("scheduleFormatter", () => {
     });
 
     it("should merge adjacent segments with the same status", () => {
-      const hoursData = { 1: "yes", 2: "yes", 3: "yes" };
+      const hoursData = { 1: "yes", 2: "yes", 3: "yes" } as const;
       const result = formatScheduleText(hoursData, timeType);
       expect(result).toBe("🟢 00:00 – 03:00 — Є світло");
     });
 
     it("should handle multiple hours in sorted order", () => {
-      const hoursData = { 3: "no", 1: "yes", 2: "yes" };
+      const hoursData = { 3: "no", 1: "yes", 2: "yes" } as const;
       const result = formatScheduleText(hoursData, timeType);
       const lines = result.split("\n");
       expect(lines).toHaveLength(2);
@@ -80,8 +80,14 @@ describe("scheduleFormatter", () => {
     const preset = { time_type: timeType };
 
     it("should always include today schedule block", () => {
-      const hoursDataToday = { 1: "yes", 2: "no" };
-      const blocks = buildScheduleBlocks(todayUNIX, tomorrowUNIX, hoursDataToday, null, preset);
+      const hoursDataToday = { 1: "yes", 2: "no" } as const;
+      const blocks = buildScheduleBlocks(
+        todayUNIX,
+        tomorrowUNIX,
+        hoursDataToday,
+        undefined,
+        preset,
+      );
       expect(blocks).toHaveLength(1);
       expect(blocks[0]).toContain("16 червня");
       expect(blocks[0]).toContain("🟢");
@@ -89,8 +95,8 @@ describe("scheduleFormatter", () => {
     });
 
     it("should include tomorrow block when tomorrow has outages", () => {
-      const hoursDataToday = { 1: "yes" };
-      const hoursDataTomorrow = { 1: "no" };
+      const hoursDataToday = { 1: "yes" } as const;
+      const hoursDataTomorrow = { 1: "no" } as const;
       const blocks = buildScheduleBlocks(
         todayUNIX,
         tomorrowUNIX,
@@ -103,8 +109,8 @@ describe("scheduleFormatter", () => {
     });
 
     it("should not include tomorrow block when all hours are yes", () => {
-      const hoursDataToday = { 1: "yes" };
-      const hoursDataTomorrow = { 1: "yes", 2: "yes" };
+      const hoursDataToday = { 1: "yes" } as const;
+      const hoursDataTomorrow = { 1: "yes", 2: "yes" } as const;
       const blocks = buildScheduleBlocks(
         todayUNIX,
         tomorrowUNIX,
@@ -116,8 +122,14 @@ describe("scheduleFormatter", () => {
     });
 
     it("should not include tomorrow block when hoursDataTomorrow is null", () => {
-      const hoursDataToday = { 1: "yes" };
-      const blocks = buildScheduleBlocks(todayUNIX, tomorrowUNIX, hoursDataToday, null, preset);
+      const hoursDataToday = { 1: "yes" } as const;
+      const blocks = buildScheduleBlocks(
+        todayUNIX,
+        tomorrowUNIX,
+        hoursDataToday,
+        undefined,
+        preset,
+      );
       expect(blocks).toHaveLength(1);
     });
   });

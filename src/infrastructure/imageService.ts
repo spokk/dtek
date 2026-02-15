@@ -11,38 +11,43 @@ import {
 import { toUADayMonthFromUnix } from "../utils/dateUtils.js";
 import { hasAnyOutage } from "../utils/helpers.js";
 import { redis } from "../lib/redis.js";
+import type { OgElement, ScheduleData } from "../types.js";
 
 const FALLBACK_IMAGE_URL = "https://y2.vyshgorod.in.ua/dtek_data/images/kyiv-region/today.png";
 const CACHE_KEY_PREFIX = "outage-image:";
 const CACHE_TTL_SECONDS = 86400; // 24h
 
-let fontCache = null;
+let fontCache: ArrayBuffer | null = null;
 
 const GOOGLE_FONTS_CSS_URL =
   "https://fonts.googleapis.com/css2?family=Inter:wght@700&subset=cyrillic";
 
-const fetchGoogleFontsCss = async () => {
+const fetchGoogleFontsCss = async (): Promise<string> => {
   return fetch(GOOGLE_FONTS_CSS_URL, {
     headers: { "User-Agent": "Mozilla/5.0" },
   }).then((r) => r.text());
 };
 
-const extractFontUrlFromCss = (css) => {
+const extractFontUrlFromCss = (css: string): string => {
   const match = css.match(/src:\s*url\(([^)]+)\)/);
   if (!match) throw new Error("Failed to parse font URL from Google Fonts CSS");
   return match[1];
 };
 
-const loadFont = async () => {
+const loadFont = async (): Promise<ArrayBuffer> => {
   if (fontCache) return fontCache;
 
   const css = await fetchGoogleFontsCss();
   const fontUrl = extractFontUrlFromCss(css);
   fontCache = await fetch(fontUrl).then((r) => r.arrayBuffer());
-  return fontCache;
+  return fontCache!;
 };
 
-const generateTableImage = async (element, width, height) => {
+const generateTableImage = async (
+  element: OgElement,
+  width: number,
+  height: number,
+): Promise<Buffer> => {
   const fontData = await loadFont();
 
   const response = new ImageResponse(element, {
@@ -54,7 +59,7 @@ const generateTableImage = async (element, width, height) => {
   return Buffer.from(await response.arrayBuffer());
 };
 
-const fetchFallbackImage = async () => {
+const fetchFallbackImage = async (): Promise<Buffer> => {
   const res = await fetch(`${FALLBACK_IMAGE_URL}?v=${Date.now()}`, {
     headers: { "User-Agent": "Mozilla/5.0" },
     cache: "no-store",
@@ -66,8 +71,8 @@ const fetchFallbackImage = async () => {
   return Buffer.from(await res.arrayBuffer());
 };
 
-const buildCacheKey = (scheduleData, hasTomorrow) => {
-  const payload = {
+const buildCacheKey = (scheduleData: ScheduleData, hasTomorrow: boolean): string => {
+  const payload: Record<string, unknown> = {
     today: scheduleData.hoursDataToday,
     todayUNIX: scheduleData.todayUNIX,
   };
@@ -81,9 +86,9 @@ const buildCacheKey = (scheduleData, hasTomorrow) => {
   return `${CACHE_KEY_PREFIX}${hash}`;
 };
 
-const getCachedImage = async (cacheKey) => {
+const getCachedImage = async (cacheKey: string): Promise<Buffer | null> => {
   try {
-    const cached = await redis.get(cacheKey);
+    const cached = await redis.get<string>(cacheKey);
     if (cached) {
       console.log("Image cache hit:", cacheKey);
       return Buffer.from(cached, "base64");
@@ -94,7 +99,7 @@ const getCachedImage = async (cacheKey) => {
   return null;
 };
 
-const setCachedImage = async (cacheKey, imageBuffer) => {
+const setCachedImage = async (cacheKey: string, imageBuffer: Buffer): Promise<void> => {
   try {
     const base64 = imageBuffer.toString("base64");
     await redis.set(cacheKey, base64, { ex: CACHE_TTL_SECONDS });
@@ -103,19 +108,18 @@ const setCachedImage = async (cacheKey, imageBuffer) => {
   }
 };
 
-export const getOutageImage = async (scheduleData) => {
+export const getOutageImage = async (scheduleData: ScheduleData | null): Promise<Buffer | null> => {
   try {
-    const hasToday = !!scheduleData?.hoursDataToday;
-    const hasTomorrow =
-      !!scheduleData?.hoursDataTomorrow && hasAnyOutage(scheduleData.hoursDataTomorrow);
+    if (!scheduleData?.hoursDataToday) throw new Error("No schedule data");
 
-    if (!hasToday) throw new Error("No schedule data");
+    const hasTomorrow =
+      !!scheduleData.hoursDataTomorrow && hasAnyOutage(scheduleData.hoursDataTomorrow);
 
     const cacheKey = buildCacheKey(scheduleData, hasTomorrow);
     const cached = await getCachedImage(cacheKey);
     if (cached) return cached;
 
-    let image;
+    let image: Buffer;
 
     if (hasTomorrow) {
       const todayLabel = toUADayMonthFromUnix(scheduleData.todayUNIX);
@@ -123,7 +127,7 @@ export const getOutageImage = async (scheduleData) => {
       const element = buildCombinedOutageTableElement(
         scheduleData.hoursDataToday,
         todayLabel,
-        scheduleData.hoursDataTomorrow,
+        scheduleData.hoursDataTomorrow!,
         tomorrowLabel,
       );
       image = await generateTableImage(element, COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT);

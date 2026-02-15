@@ -1,3 +1,4 @@
+import type { DtekResponse, HouseData, OutageData, PowerRow, ScheduleData } from "../types.js";
 import { fetchDTEKOutageData } from "../infrastructure/dtekApi.js";
 import { fetchSvitlobotOutageData } from "../infrastructure/svitlobotApi.js";
 import { withRetry } from "../utils/httpClient.js";
@@ -9,9 +10,9 @@ import { config } from "../config.js";
 const RETRY_LIMITS = {
   DTEK: 10,
   SVITLOBOT: 3,
-};
+} as const;
 
-async function fetchDTEK(currentDate) {
+async function fetchDTEK(currentDate: string): Promise<DtekResponse> {
   const result = await withRetry(
     () => fetchDTEKOutageData(currentDate, config.dtek),
     RETRY_LIMITS.DTEK,
@@ -25,7 +26,7 @@ async function fetchDTEK(currentDate) {
   return result;
 }
 
-async function fetchSvitlobot() {
+async function fetchSvitlobot(): Promise<PowerRow[]> {
   try {
     const result = await withRetry(
       fetchSvitlobotOutageData,
@@ -35,12 +36,14 @@ async function fetchSvitlobot() {
 
     return result ?? [];
   } catch (error) {
-    console.warn("Svitlobot data unavailable:", error.message);
+    console.warn("Svitlobot data unavailable:", (error as Error).message);
     return [];
   }
 }
 
-async function fetchAllOutageSources(currentDate) {
+async function fetchAllOutageSources(
+  currentDate: string,
+): Promise<{ dtekData: DtekResponse; svitlobotData: PowerRow[] }> {
   const [dtekResult, svitlobotResult] = await Promise.allSettled([
     fetchDTEK(currentDate),
     fetchSvitlobot(),
@@ -59,7 +62,11 @@ async function fetchAllOutageSources(currentDate) {
   };
 }
 
-function buildOutageResponse(dtekResponse, svitlobotData, currentDate) {
+function buildOutageResponse(
+  dtekResponse: DtekResponse,
+  svitlobotData: PowerRow[],
+  currentDate: string,
+): OutageData {
   const houseData = getHouseDataFromResponse(dtekResponse, config.dtek.house);
 
   return {
@@ -71,7 +78,7 @@ function buildOutageResponse(dtekResponse, svitlobotData, currentDate) {
   };
 }
 
-export async function getOutageData() {
+export async function getOutageData(): Promise<OutageData> {
   const currentDate = getCurrentUADateTime();
 
   const { dtekData, svitlobotData } = await fetchAllOutageSources(currentDate);
@@ -79,7 +86,10 @@ export async function getOutageData() {
   return buildOutageResponse(dtekData, svitlobotData, currentDate);
 }
 
-export function extractScheduleData(dtekResponse, houseData) {
+export function extractScheduleData(
+  dtekResponse: DtekResponse,
+  houseData?: HouseData | null,
+): ScheduleData | null {
   const resolvedHouseData = houseData ?? getHouseDataFromResponse(dtekResponse, config.dtek.house);
   const reasonKey = resolvedHouseData?.sub_type_reason?.[0];
   const { fact, preset } = dtekResponse;
