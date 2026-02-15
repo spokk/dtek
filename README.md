@@ -54,13 +54,13 @@ src/
 
 ## Scripts
 
-| Command              | Description                     |
-| -------------------- | ------------------------------- |
-| `npm test`           | Run tests (Jest)                |
-| `npm run lint`       | Lint with ESLint                |
-| `npm run format`     | Fix lint + format with Prettier |
-| `npm run typecheck`  | Type-check with TypeScript      |
-| `npm run deploy`     | Deploy to Vercel                |
+| Command             | Description                     |
+| ------------------- | ------------------------------- |
+| `npm test`          | Run tests (Jest)                |
+| `npm run lint`      | Lint with ESLint                |
+| `npm run format`    | Fix lint + format with Prettier |
+| `npm run typecheck` | Type-check with TypeScript      |
+| `npm run deploy`    | Deploy to Vercel                |
 
 ## License
 

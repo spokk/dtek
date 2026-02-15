@@ -1,4 +1,4 @@
-import { formatScheduleText, buildScheduleBlocks } from "./scheduleFormatter";
+import { formatScheduleText, buildScheduleBlocks } from "./scheduleFormatter.js";
 
 const timeType = {
   yes: "Є світло",

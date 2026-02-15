@@ -16,51 +16,51 @@ describe("dateUtils", () => {
       it("should parse DD.MM.YYYY HH:MM format", () => {
         const result = parseUaDateTimeSafe("25.12.2023 14:30");
         expect(result).toBeInstanceOf(Date);
-        expect(result.getFullYear()).toBe(2023);
-        expect(result.getMonth()).toBe(11); // December is month 11
-        expect(result.getDate()).toBe(25);
-        expect(result.getHours()).toBe(14);
-        expect(result.getMinutes()).toBe(30);
+        expect(result!.getFullYear()).toBe(2023);
+        expect(result!.getMonth()).toBe(11); // December is month 11
+        expect(result!.getDate()).toBe(25);
+        expect(result!.getHours()).toBe(14);
+        expect(result!.getMinutes()).toBe(30);
       });
 
       it("should parse HH:MM DD.MM.YYYY format", () => {
         const result = parseUaDateTimeSafe("14:30 25.12.2023");
         expect(result).toBeInstanceOf(Date);
-        expect(result.getFullYear()).toBe(2023);
-        expect(result.getMonth()).toBe(11);
-        expect(result.getDate()).toBe(25);
-        expect(result.getHours()).toBe(14);
-        expect(result.getMinutes()).toBe(30);
+        expect(result!.getFullYear()).toBe(2023);
+        expect(result!.getMonth()).toBe(11);
+        expect(result!.getDate()).toBe(25);
+        expect(result!.getHours()).toBe(14);
+        expect(result!.getMinutes()).toBe(30);
       });
 
       it("should handle leap year dates", () => {
         const result = parseUaDateTimeSafe("29.02.2024 12:00");
         expect(result).toBeInstanceOf(Date);
-        expect(result.getDate()).toBe(29);
-        expect(result.getMonth()).toBe(1); // February
+        expect(result!.getDate()).toBe(29);
+        expect(result!.getMonth()).toBe(1); // February
       });
 
       it("should handle midnight (00:00)", () => {
         const result = parseUaDateTimeSafe("01.01.2024 00:00");
         expect(result).toBeInstanceOf(Date);
-        expect(result.getHours()).toBe(0);
-        expect(result.getMinutes()).toBe(0);
+        expect(result!.getHours()).toBe(0);
+        expect(result!.getMinutes()).toBe(0);
       });
 
       it("should handle end of day (23:59)", () => {
         const result = parseUaDateTimeSafe("31.12.2023 23:59");
         expect(result).toBeInstanceOf(Date);
-        expect(result.getHours()).toBe(23);
-        expect(result.getMinutes()).toBe(59);
+        expect(result!.getHours()).toBe(23);
+        expect(result!.getMinutes()).toBe(59);
       });
     });
 
     describe("invalid inputs", () => {
       it("should return null for non-string input", () => {
-        expect(parseUaDateTimeSafe(123)).toBeNull();
-        expect(parseUaDateTimeSafe(null)).toBeNull();
-        expect(parseUaDateTimeSafe(undefined)).toBeNull();
-        expect(parseUaDateTimeSafe({})).toBeNull();
+        expect(parseUaDateTimeSafe(123 as unknown as string)).toBeNull();
+        expect(parseUaDateTimeSafe(null as unknown as string)).toBeNull();
+        expect(parseUaDateTimeSafe(undefined as unknown as string)).toBeNull();
+        expect(parseUaDateTimeSafe({} as unknown as string)).toBeNull();
       });
 
       it("should return null for empty string", () => {
@@ -88,10 +88,10 @@ describe("dateUtils", () => {
         const result = parseUaDateTimeSafe("25.12.2023 24:00");
         expect(result).toBeInstanceOf(Date);
         // 24:00 on Dec 25 = 00:00 on Dec 26
-        expect(result.getDate()).toBe(26);
-        expect(result.getMonth()).toBe(11); // December
-        expect(result.getHours()).toBe(0);
-        expect(result.getMinutes()).toBe(0);
+        expect(result!.getDate()).toBe(26);
+        expect(result!.getMonth()).toBe(11); // December
+        expect(result!.getHours()).toBe(0);
+        expect(result!.getMinutes()).toBe(0);
       });
 
       it("should return null for wrong format", () => {

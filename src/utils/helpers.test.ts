@@ -13,7 +13,7 @@ describe("helpers", () => {
         data: {
           123: { name: "House 123", status: "active" },
         },
-      };
+      } as unknown as import("../types.js").DtekResponse;
       expect(getHouseDataFromResponse(dtekResponse, "123")).toEqual({
         name: "House 123",
         status: "active",
@@ -25,7 +25,7 @@ describe("helpers", () => {
         data: {
           123: { name: "House 123" },
         },
-      };
+      } as unknown as import("../types.js").DtekResponse;
       expect(getHouseDataFromResponse(dtekResponse, "456")).toBeNull();
     });
 
@@ -38,7 +38,7 @@ describe("helpers", () => {
     });
 
     it("returns null when dtekResponse.data is missing", () => {
-      const dtekResponse = { other: "data" };
+      const dtekResponse = { other: "data" } as unknown as import("../types.js").DtekResponse;
       expect(getHouseDataFromResponse(dtekResponse, "123")).toBeNull();
     });
 
@@ -47,7 +47,7 @@ describe("helpers", () => {
         data: {
           123: { name: "House 123" },
         },
-      };
+      } as unknown as import("../types.js").DtekResponse;
       expect(getHouseDataFromResponse(dtekResponse, undefined)).toBeNull();
     });
   });
@@ -84,15 +84,15 @@ describe("helpers", () => {
     });
 
     it("returns null when fact is null", () => {
-      expect(extractTodayUNIX(null)).toBeNull();
+      expect(extractTodayUNIX(null as unknown as import("../types.js").DtekFact)).toBeNull();
     });
 
     it("returns null when fact is undefined", () => {
-      expect(extractTodayUNIX(undefined)).toBeNull();
+      expect(extractTodayUNIX(undefined as unknown as import("../types.js").DtekFact)).toBeNull();
     });
 
     it("returns null when fact.today is missing", () => {
-      const fact = { other: "data" };
+      const fact = { other: "data" } as unknown as import("../types.js").DtekFact;
       expect(extractTodayUNIX(fact)).toBeNull();
     });
 
@@ -160,33 +160,41 @@ describe("helpers", () => {
     it("returns hours data when all parameters are valid", () => {
       const fact = {
         data: {
-          1704067200: {
-            reason_123: [1, 2, 3, 4],
+          "1704067200": {
+            reason_123: { "0": "yes", "1": "no", "2": "yes", "3": "no" } as Record<
+              string,
+              import("../types.js").HourStatus
+            >,
           },
         },
-      };
-      expect(getHoursData(fact, "reason_123", 1704067200)).toEqual([1, 2, 3, 4]);
+      } as unknown as import("../types.js").DtekFact;
+      expect(getHoursData(fact, "reason_123", 1704067200)).toEqual({
+        "0": "yes",
+        "1": "no",
+        "2": "yes",
+        "3": "no",
+      });
     });
 
     it("returns undefined when reasonKey does not exist", () => {
       const fact = {
         data: {
-          1704067200: {
-            reason_123: [1, 2, 3, 4],
+          "1704067200": {
+            reason_123: { "0": "yes" } as Record<string, import("../types.js").HourStatus>,
           },
         },
-      };
+      } as unknown as import("../types.js").DtekFact;
       expect(getHoursData(fact, "reason_456", 1704067200)).toBeUndefined();
     });
 
     it("returns undefined when dayUNIX does not exist", () => {
       const fact = {
         data: {
-          1704067200: {
-            reason_123: [1, 2, 3, 4],
+          "1704067200": {
+            reason_123: { "0": "yes" } as Record<string, import("../types.js").HourStatus>,
           },
         },
-      };
+      } as unknown as import("../types.js").DtekFact;
       expect(getHoursData(fact, "reason_123", 9999999999)).toBeUndefined();
     });
 
@@ -199,18 +207,18 @@ describe("helpers", () => {
     });
 
     it("returns undefined when fact.data is missing", () => {
-      const fact = { other: "data" };
+      const fact = { other: "data" } as unknown as import("../types.js").DtekFact;
       expect(getHoursData(fact, "reason_123", 1704067200)).toBeUndefined();
     });
 
     it("returns empty object when data exists but is empty", () => {
       const fact = {
         data: {
-          1704067200: {
-            reason_123: {},
+          "1704067200": {
+            reason_123: {} as Record<string, import("../types.js").HourStatus>,
           },
         },
-      };
+      } as unknown as import("../types.js").DtekFact;
       expect(getHoursData(fact, "reason_123", 1704067200)).toEqual({});
     });
   });

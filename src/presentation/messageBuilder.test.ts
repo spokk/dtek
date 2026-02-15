@@ -1,4 +1,4 @@
-import { formatOutageMessage } from "./messageBuilder";
+import { formatOutageMessage } from "./messageBuilder.js";
 
 const timeZone = {
   0: ["unused", "00:00", "01:00"],

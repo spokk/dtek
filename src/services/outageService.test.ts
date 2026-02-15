@@ -34,24 +34,25 @@ beforeEach(() => {
 const todayUNIX = 1750032000;
 const tomorrowUNIX = 1750118400;
 
-const buildDtekResponse = (overrides = {}) => ({
-  fact: {
-    today: String(todayUNIX),
-    data: {
-      [todayUNIX]: {
-        GPV1: { 1: "yes", 2: "no" },
-      },
-      [tomorrowUNIX]: {
-        GPV1: { 1: "no", 2: "yes" },
+const buildDtekResponse = (overrides: Record<string, unknown> = {}) =>
+  ({
+    fact: {
+      today: String(todayUNIX),
+      data: {
+        [String(todayUNIX)]: {
+          GPV1: { "1": "yes", "2": "no" } as Record<string, "yes" | "no">,
+        },
+        [String(tomorrowUNIX)]: {
+          GPV1: { "1": "no", "2": "yes" } as Record<string, "yes" | "no">,
+        },
       },
     },
-  },
-  preset: { time_zone: {}, time_type: {} },
-  data: {
-    123: { sub_type_reason: ["GPV1"] },
-  },
-  ...overrides,
-});
+    preset: { time_zone: {}, time_type: {} },
+    data: {
+      "123": { sub_type_reason: ["GPV1"] },
+    },
+    ...overrides,
+  }) as unknown as import("../types.js").DtekResponse;
 
 describe("extractScheduleData", () => {
   it("returns schedule data with today and tomorrow hours", () => {
@@ -71,13 +72,13 @@ describe("extractScheduleData", () => {
     const dtekResponse = buildDtekResponse();
     const houseData = { sub_type_reason: ["GPV2"] };
 
-    dtekResponse.fact.data[todayUNIX].GPV2 = { 1: "yes" };
-    dtekResponse.fact.data[tomorrowUNIX].GPV2 = { 1: "no" };
+    (dtekResponse.fact.data![String(todayUNIX)] as Record<string, unknown>).GPV2 = { "1": "yes" };
+    (dtekResponse.fact.data![String(tomorrowUNIX)] as Record<string, unknown>).GPV2 = { "1": "no" };
 
     const result = extractScheduleData(dtekResponse, houseData);
 
     expect(result!.reasonKey).toBe("GPV2");
-    expect(result!.hoursDataToday).toEqual({ 1: "yes" });
+    expect(result!.hoursDataToday).toEqual({ "1": "yes" });
   });
 
   it("falls back to getHouseDataFromResponse when houseData is not provided", () => {
@@ -89,7 +90,7 @@ describe("extractScheduleData", () => {
 
   it("returns null when fact.today is invalid", () => {
     const dtekResponse = buildDtekResponse();
-    dtekResponse.fact.today = null;
+    (dtekResponse.fact as Record<string, unknown>).today = null;
 
     expect(extractScheduleData(dtekResponse)).toBeNull();
   });
@@ -108,17 +109,17 @@ describe("extractScheduleData", () => {
 
   it("returns undefined hoursDataTomorrow when tomorrow data missing", () => {
     const dtekResponse = buildDtekResponse();
-    delete dtekResponse.fact.data[tomorrowUNIX];
+    delete dtekResponse.fact.data![String(tomorrowUNIX)];
 
     const result = extractScheduleData(dtekResponse);
 
-    expect(result!.hoursDataToday).toEqual({ 1: "yes", 2: "no" });
+    expect(result!.hoursDataToday).toEqual({ "1": "yes", "2": "no" });
     expect(result!.hoursDataTomorrow).toBeUndefined();
   });
 
   it("returns undefined hoursDataToday when today data missing for reasonKey", () => {
     const dtekResponse = buildDtekResponse();
-    delete dtekResponse.fact.data[todayUNIX].GPV1;
+    delete (dtekResponse.fact.data![String(todayUNIX)] as Record<string, unknown>).GPV1;
 
     const result = extractScheduleData(dtekResponse);
 

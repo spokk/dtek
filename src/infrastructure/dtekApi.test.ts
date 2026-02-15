@@ -8,7 +8,7 @@ const testDtekConfig = {
   house: "test-house",
 };
 
-const mockSuccessResponse = (body = { status: "ok" }) => ({
+const mockSuccessResponse = (body: Record<string, unknown> = { status: "ok" }) => ({
   ok: true,
   status: 200,
   statusText: "OK",

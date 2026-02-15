@@ -1,4 +1,4 @@
-import { formatNoOutageMessage, formatActiveOutageMessage } from "./outageFormatter";
+import { formatNoOutageMessage, formatActiveOutageMessage } from "./outageFormatter.js";
 
 describe("outageFormatter", () => {
   describe("formatNoOutageMessage", () => {
