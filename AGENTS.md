@@ -3,35 +3,37 @@
 ## Commands
 
 - **Test all:** `npm test`
-- **Test single file:** `npx jest src/utils/dateUtils.test.js`
+- **Test single file:** `npx jest src/utils/dateUtils.test.ts`
 - **Lint:** `npm run lint` | **Fix:** `npm run lint:fix`
 - **Format:** `npm run format` (eslint fix + prettier)
+- **Type-check:** `npm run typecheck`
 - **Deploy:** `npm run deploy` (Vercel)
 
 ## Architecture
 
-Telegram bot (Telegraf) deployed as a Vercel serverless function (`api/bot.js`).
+Telegram bot (Telegraf) deployed as a Vercel serverless function (`api/bot.ts`).
 
-- `src/config.js` — Environment variable validation and app configuration
+- `src/config.ts` — Environment variable validation and app configuration
+- `src/types.ts` — Shared TypeScript type definitions
 - `src/lib/` — Shared clients and infrastructure wiring
-  - `redis.js` — Upstash Redis client instance
-- `src/infrastructure/` — External API clients (`dtekApi.js`, `svitlobotApi.js`) and image generation service (`imageService.js` using `@vercel/og`)
-- `src/services/` — Business logic (`outageService.js`: outage data aggregation, schedule extraction with retry)
+  - `redis.ts` — Upstash Redis client instance
+- `src/infrastructure/` — External API clients (`dtekApi.ts`, `svitlobotApi.ts`) and image generation service (`imageService.ts` using `@vercel/og`)
+- `src/services/` — Business logic (`outageService.ts`: outage data aggregation, schedule extraction with retry)
 - `src/presentation/` — Telegram output layer
-  - `messageBuilder.js` — Top-level message assembly
-  - `outageTableImage.js` — Satori/OG-compatible element tree for outage schedule images
-  - `formatters/` — Individual formatters (`outageFormatter.js`, `scheduleFormatter.js`) for HTML output
+  - `messageBuilder.ts` — Top-level message assembly
+  - `outageTableImage.ts` — Satori/OG-compatible element tree for outage schedule images
+  - `formatters/` — Individual formatters (`outageFormatter.ts`, `scheduleFormatter.ts`) for HTML output
 - `src/utils/` — Shared helpers
-  - `dateUtils.js` — Date formatting via Luxon
-  - `httpClient.js` — HTTP fetch with retry logic
-  - `escapeHtml.js` — HTML escaping for Telegram messages
-  - `helpers.js` — DTEK response data extraction utilities
-  - `powerUtils.js` — Power statistics helpers
+  - `dateUtils.ts` — Date formatting via Luxon
+  - `httpClient.ts` — HTTP fetch with retry logic
+  - `escapeHtml.ts` — HTML escaping for Telegram messages
+  - `helpers.ts` — DTEK response data extraction utilities
+  - `powerUtils.ts` — Power statistics helpers
 
 ## Code Style
 
-- ES Modules (`"type": "module"`), Node 24. Use `.js` extensions in imports.
+- TypeScript with ES Modules (`"type": "module"`), Node 24. Use `.ts` extensions for source, `.js` extensions in runtime imports.
 - Prettier: 100 char printWidth. ESLint with recommended rules + prettier plugin.
-- Tests: Jest 30 + SWC transform. Co-locate tests as `*.test.js` next to source files.
+- Tests: Jest 30 + SWC transform. Co-locate tests as `*.test.ts` next to source files.
 - Named exports preferred. Async/await for all async code. `console.error` for errors.
 - Ukrainian language in user-facing bot messages.

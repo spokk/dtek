@@ -7,8 +7,10 @@ Deployed as a serverless Vercel function, triggered via Telegram webhook.
 ## Architecture
 
 ```
-api/bot.js                  ← Vercel entrypoint, Telegram webhook handler
+api/bot.ts                  ← Vercel entrypoint, Telegram webhook handler
 src/
+  config.ts                 ← Environment variable validation and app configuration
+  types.ts                  ← Shared TypeScript type definitions
   lib/                      ← Shared clients (Redis)
   infrastructure/           ← External API clients (DTEK, Svitlobot, schedule image)
   services/                 ← Business logic (outage data aggregation)
@@ -52,12 +54,13 @@ src/
 
 ## Scripts
 
-| Command          | Description                     |
-| ---------------- | ------------------------------- |
-| `npm test`       | Run tests (Jest)                |
-| `npm run lint`   | Lint with ESLint                |
-| `npm run format` | Fix lint + format with Prettier |
-| `npm run deploy` | Deploy to Vercel                |
+| Command              | Description                     |
+| -------------------- | ------------------------------- |
+| `npm test`           | Run tests (Jest)                |
+| `npm run lint`       | Lint with ESLint                |
+| `npm run format`     | Fix lint + format with Prettier |
+| `npm run typecheck`  | Type-check with TypeScript      |
+| `npm run deploy`     | Deploy to Vercel                |
 
 ## License
 
