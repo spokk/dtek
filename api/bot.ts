@@ -1,11 +1,11 @@
 import "dotenv/config";
 import { Telegraf } from "telegraf";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 import { config } from "../src/config.js";
 import { getOutageImage } from "../src/infrastructure/imageService.js";
 import { getOutageData } from "../src/services/outageService.js";
 import { formatOutageMessage } from "../src/presentation/messageBuilder.js";
-import type { VercelRequest, VercelResponse } from "../src/types.js";
 
 const bot = new Telegraf(config.telegram.botToken);
 
