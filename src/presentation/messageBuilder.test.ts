@@ -1,28 +1,25 @@
 import { formatOutageMessage } from "./messageBuilder.js";
-
-const timeZone = {
-  0: ["unused", "00:00", "01:00"],
-  1: ["unused", "01:00", "02:00"],
-};
-
-const timeType = {
-  yes: "Є світло",
-  no: "Немає світла",
-  mfirst: "Можливо",
-  msecond: "Можливо",
-};
+import type { OutageData, HoursData } from "../types.js";
 
 const todayUNIX = 1750032000;
 const tomorrowUNIX = todayUNIX + 86400;
 
 const preset = {
   sch_names: { GPV1: "Черга 1" },
-  time_zone: timeZone,
-  time_type: timeType,
+  time_type: {
+    yes: "Є світло",
+    no: "Немає світла",
+    mfirst: "Можливо",
+    msecond: "Можливо",
+  },
 };
 
-const buildOutageData = (overrides: Record<string, any> = {}) => ({
+const defaultHoursDataToday: HoursData = { "0": "yes", "1": "no" };
+
+const buildOutageData = (overrides: Partial<OutageData> = {}): OutageData => ({
   dtekResponse: {
+    fact: {},
+    preset: {},
     updateTimestamp: "12:00 15.06.2025",
   },
   houseData: {
@@ -33,7 +30,7 @@ const buildOutageData = (overrides: Record<string, any> = {}) => ({
     tomorrowUNIX,
     reasonKey: "GPV1",
     preset,
-    hoursDataToday: { 0: "yes", 1: "no" },
+    hoursDataToday: defaultHoursDataToday,
     hoursDataTomorrow: undefined,
   },
   powerStats: null,
@@ -44,7 +41,7 @@ const buildOutageData = (overrides: Record<string, any> = {}) => ({
 describe("messageBuilder", () => {
   describe("formatOutageMessage", () => {
     it("returns no-outage message when houseData has no outage period", () => {
-      const result = formatOutageMessage(buildOutageData() as any);
+      const result = formatOutageMessage(buildOutageData());
 
       expect(result).toContain("Відключень не зафіксовано");
       expect(result).toContain("Черга 1");
@@ -59,7 +56,7 @@ describe("messageBuilder", () => {
             start_date: "10:00 15.06.2025",
             end_date: "18:00 15.06.2025",
           },
-        }) as any,
+        }),
       );
 
       expect(result).toContain("Відключення.");
@@ -74,10 +71,10 @@ describe("messageBuilder", () => {
             tomorrowUNIX,
             reasonKey: "GPV1",
             preset,
-            hoursDataToday: { 1: "yes", 2: "no" },
+            hoursDataToday: { "1": "yes", "2": "no" } as HoursData,
             hoursDataTomorrow: undefined,
           },
-        }) as any,
+        }),
       );
 
       expect(result).toContain("Графік відключень");
@@ -89,14 +86,14 @@ describe("messageBuilder", () => {
       const result = formatOutageMessage(
         buildOutageData({
           powerStats: { region: "Регіон", lightPercent: 85 },
-        }) as any,
+        }),
       );
 
       expect(result).toContain("85% з електропостачанням");
     });
 
     it("includes updateTimestamp", () => {
-      const result = formatOutageMessage(buildOutageData() as any);
+      const result = formatOutageMessage(buildOutageData());
 
       expect(result).toContain("12:00 15.06.2025");
     });
@@ -105,7 +102,7 @@ describe("messageBuilder", () => {
       const result = formatOutageMessage(
         buildOutageData({
           scheduleData: null,
-        }) as any,
+        }),
       );
 
       expect(result).toContain("Відключень не зафіксовано");
@@ -120,7 +117,7 @@ describe("messageBuilder", () => {
             sub_type: "Аварійне",
             end_date: "18:00 15.06.2025",
           },
-        }) as any,
+        }),
       );
 
       expect(result).toContain("Відключення.");
@@ -135,7 +132,7 @@ describe("messageBuilder", () => {
             sub_type: "Аварійне",
             start_date: "10:00 15.06.2025",
           },
-        }) as any,
+        }),
       );
 
       expect(result).toContain("Відключення.");
@@ -147,7 +144,7 @@ describe("messageBuilder", () => {
         buildOutageData({
           houseData: null,
           scheduleData: null,
-        }) as any,
+        }),
       );
 
       expect(result).toContain("Відключень не зафіксовано");

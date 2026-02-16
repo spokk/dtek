@@ -21,7 +21,7 @@ describe("scheduleFormatter", () => {
     });
 
     it("should return empty string when timeType is null", () => {
-      expect(formatScheduleText({ 1: "yes" }, null as any)).toBe("");
+      expect(formatScheduleText({ 1: "yes" }, null as never)).toBe("");
     });
 
     it("should format a single yes hour with green icon", () => {

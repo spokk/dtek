@@ -2,6 +2,7 @@ import { extractScheduleData, getOutageData } from "./outageService.js";
 import { fetchDTEKOutageData } from "../infrastructure/dtekApi.js";
 import { fetchSvitlobotOutageData } from "../infrastructure/svitlobotApi.js";
 import { config } from "../config.js";
+import type { DtekResponse, HoursData, HouseData } from "../types.js";
 
 jest.mock("../config.js", () => ({
   config: {
@@ -34,25 +35,28 @@ beforeEach(() => {
 const todayUNIX = 1750032000;
 const tomorrowUNIX = 1750118400;
 
-const buildDtekResponse = (overrides: Record<string, unknown> = {}) =>
-  ({
+const todayKey = String(todayUNIX);
+const tomorrowKey = String(tomorrowUNIX);
+
+const defaultTodayHours: HoursData = { "1": "yes", "2": "no" };
+const defaultTomorrowHours: HoursData = { "1": "no", "2": "yes" };
+
+function buildDtekResponse(overrides: Partial<DtekResponse> = {}): DtekResponse {
+  return {
     fact: {
-      today: String(todayUNIX),
+      today: todayKey,
       data: {
-        [String(todayUNIX)]: {
-          GPV1: { "1": "yes", "2": "no" } as Record<string, "yes" | "no">,
-        },
-        [String(tomorrowUNIX)]: {
-          GPV1: { "1": "no", "2": "yes" } as Record<string, "yes" | "no">,
-        },
+        [todayKey]: { GPV1: defaultTodayHours },
+        [tomorrowKey]: { GPV1: defaultTomorrowHours },
       },
     },
-    preset: { time_zone: {}, time_type: {} },
+    preset: { time_type: {} },
     data: {
       "123": { sub_type_reason: ["GPV1"] },
     },
     ...overrides,
-  }) as unknown as import("../types.js").DtekResponse;
+  };
+}
 
 describe("extractScheduleData", () => {
   it("returns schedule data with today and tomorrow hours", () => {
@@ -62,41 +66,52 @@ describe("extractScheduleData", () => {
       todayUNIX,
       tomorrowUNIX,
       reasonKey: "GPV1",
-      preset: { time_zone: {}, time_type: {} },
+      preset: { time_type: {} },
       hoursDataToday: { 1: "yes", 2: "no" },
       hoursDataTomorrow: { 1: "no", 2: "yes" },
     });
   });
 
   it("uses explicit houseData when provided", () => {
-    const dtekResponse = buildDtekResponse();
-    const houseData = { sub_type_reason: ["GPV2"] };
+    const houseData: HouseData = { sub_type_reason: ["GPV2"] };
+    const gpv2Today: HoursData = { "1": "yes" };
+    const gpv2Tomorrow: HoursData = { "1": "no" };
 
-    (dtekResponse.fact.data![String(todayUNIX)] as Record<string, unknown>).GPV2 = { "1": "yes" };
-    (dtekResponse.fact.data![String(tomorrowUNIX)] as Record<string, unknown>).GPV2 = { "1": "no" };
+    const dtekResponse = buildDtekResponse({
+      fact: {
+        today: todayKey,
+        data: {
+          [todayKey]: { GPV1: defaultTodayHours, GPV2: gpv2Today },
+          [tomorrowKey]: { GPV1: defaultTomorrowHours, GPV2: gpv2Tomorrow },
+        },
+      },
+    });
 
     const result = extractScheduleData(dtekResponse, houseData);
 
-    expect(result!.reasonKey).toBe("GPV2");
-    expect(result!.hoursDataToday).toEqual({ "1": "yes" });
+    expect(result).not.toBeNull();
+    expect(result?.reasonKey).toBe("GPV2");
+    expect(result?.hoursDataToday).toEqual({ "1": "yes" });
   });
 
   it("falls back to getHouseDataFromResponse when houseData is not provided", () => {
     config.dtek.house = "123";
     const result = extractScheduleData(buildDtekResponse());
 
-    expect(result!.reasonKey).toBe("GPV1");
+    expect(result).not.toBeNull();
+    expect(result?.reasonKey).toBe("GPV1");
   });
 
   it("returns null when fact.today is invalid", () => {
-    const dtekResponse = buildDtekResponse();
-    (dtekResponse.fact as Record<string, unknown>).today = null;
+    const dtekResponse = buildDtekResponse({
+      fact: { today: undefined, data: {} },
+    });
 
     expect(extractScheduleData(dtekResponse)).toBeNull();
   });
 
   it("returns null when reasonKey is missing", () => {
-    const houseData = { sub_type_reason: [] };
+    const houseData: HouseData = { sub_type_reason: [] };
 
     expect(extractScheduleData(buildDtekResponse(), houseData)).toBeNull();
   });
@@ -108,34 +123,51 @@ describe("extractScheduleData", () => {
   });
 
   it("returns undefined hoursDataTomorrow when tomorrow data missing", () => {
-    const dtekResponse = buildDtekResponse();
-    delete dtekResponse.fact.data![String(tomorrowUNIX)];
+    const dtekResponse = buildDtekResponse({
+      fact: {
+        today: todayKey,
+        data: {
+          [todayKey]: { GPV1: defaultTodayHours },
+        },
+      },
+    });
 
     const result = extractScheduleData(dtekResponse);
 
-    expect(result!.hoursDataToday).toEqual({ "1": "yes", "2": "no" });
-    expect(result!.hoursDataTomorrow).toBeUndefined();
+    expect(result).not.toBeNull();
+    expect(result?.hoursDataToday).toEqual({ "1": "yes", "2": "no" });
+    expect(result?.hoursDataTomorrow).toBeUndefined();
   });
 
   it("returns undefined hoursDataToday when today data missing for reasonKey", () => {
-    const dtekResponse = buildDtekResponse();
-    delete (dtekResponse.fact.data![String(todayUNIX)] as Record<string, unknown>).GPV1;
+    const dtekResponse = buildDtekResponse({
+      fact: {
+        today: todayKey,
+        data: {
+          [todayKey]: {},
+          [tomorrowKey]: { GPV1: defaultTomorrowHours },
+        },
+      },
+    });
 
     const result = extractScheduleData(dtekResponse);
 
-    expect(result!.hoursDataToday).toBeUndefined();
+    expect(result).not.toBeNull();
+    expect(result?.hoursDataToday).toBeUndefined();
   });
 
   it("includes preset from dtekResponse", () => {
-    const preset = { time_zone: { 0: ["a"] }, time_type: { yes: "Є" } };
+    const preset = { time_type: { yes: "Є" } };
     const result = extractScheduleData(buildDtekResponse({ preset }));
 
-    expect(result!.preset).toBe(preset);
+    expect(result).not.toBeNull();
+    expect(result?.preset).toBe(preset);
   });
 
   it("computes correct tomorrowUNIX", () => {
     const result = extractScheduleData(buildDtekResponse());
 
+    expect(result).not.toBeNull();
     expect(result!.tomorrowUNIX - result!.todayUNIX).toBe(86400);
   });
 });
@@ -153,7 +185,7 @@ describe("getOutageData", () => {
     expect(result.dtekResponse).toBe(dtekResponse);
     expect(result.houseData).toEqual({ sub_type_reason: ["GPV1"] });
     expect(result.scheduleData).not.toBeNull();
-    expect(result.scheduleData!.reasonKey).toBe("GPV1");
+    expect(result.scheduleData?.reasonKey).toBe("GPV1");
     expect(result.currentDate).toMatch(/\d{2}:\d{2} \d{2}\.\d{2}\.\d{4}/);
   });
 
