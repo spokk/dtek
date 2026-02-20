@@ -1,8 +1,4 @@
 {
-  "env": {
-    "NODE_ENV": "production"
-  },
-
   "headers": [
     {
       "headers": [
