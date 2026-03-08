@@ -10,11 +10,11 @@ const el = (type: string, props: Record<string, unknown>): OgElement => ({ type,
    IMAGE CONSTANTS
 ========================= */
 
-export const IMAGE_WIDTH = 1020;
-export const IMAGE_HEIGHT = 820;
+export const IMAGE_WIDTH = 714;
+export const IMAGE_HEIGHT = 574;
 
-const IMAGE_PADDING = 16;
-const IMAGE_GAP = 10;
+const IMAGE_PADDING = 11;
+const IMAGE_GAP = 7;
 
 /* =========================
    GRID CONSTANTS
@@ -27,9 +27,9 @@ const COLS = 6;
 const ROWS_PER_HALF = 2;
 const HOURS_PER_HALF = COLS * ROWS_PER_HALF;
 
-const CELL_SIZE = 150;
-const CELL_RADIUS = 16;
-const CELL_GAP = 12;
+const CELL_SIZE = 105;
+const CELL_RADIUS = 11;
+const CELL_GAP = 8;
 
 const SPLIT_RATIO = 0.5;
 
@@ -37,10 +37,10 @@ const SPLIT_RATIO = 0.5;
    TEXT CONSTANTS
 ========================= */
 
-const TITLE_FONT_SIZE = 40;
-const SUBTITLE_FONT_SIZE = 24;
-const HOUR_FONT_SIZE = 40; // Slightly smaller to fit the range
-const LABEL_FONT_SIZE = 22;
+const TITLE_FONT_SIZE = 28;
+const SUBTITLE_FONT_SIZE = 17;
+const HOUR_FONT_SIZE = 28;
+const LABEL_FONT_SIZE = 15;
 
 const TEXT_SHADOW = "0 2px 4px rgba(0, 0, 0, 0.6)";
 const LABEL_OPACITY = 0.85;
@@ -282,22 +282,22 @@ const buildLegend = () =>
     style: {
       ...flex,
       flexDirection: "row",
-      gap: "30px",
-      marginTop: "4px",
+      gap: "21px",
+      marginTop: "3px",
     },
     children: LEGEND_ITEMS.map(({ color, label }) =>
       el("div", {
         style: {
           ...flex,
           alignItems: "center",
-          gap: "12px",
+          gap: "8px",
         },
         children: [
           el("div", {
             style: {
-              width: "20px",
-              height: "20px",
-              borderRadius: "8px",
+              width: "14px",
+              height: "14px",
+              borderRadius: "6px",
               background:
                 color === "linear-gradient(green/red)"
                   ? `linear-gradient(${COLORS.green}, ${COLORS.red})`
@@ -306,7 +306,7 @@ const buildLegend = () =>
           }),
           el("div", {
             style: {
-              fontSize: "20px",
+              fontSize: "14px",
               color: COLORS.legend,
             },
             children: label,
@@ -324,15 +324,15 @@ const buildLegend = () =>
    COMBINED IMAGE CONSTANTS
 ========================= */
 
-const COMBINED_CELL_SIZE = 75;
-const COMBINED_CELL_GAP = 6;
-const COMBINED_CELL_RADIUS = 10;
-const COMBINED_HOUR_FONT_SIZE = 20;
-const COMBINED_LABEL_FONT_SIZE = 12;
-const COMBINED_GAP = 6;
+const COMBINED_CELL_SIZE = 52;
+const COMBINED_CELL_GAP = 4;
+const COMBINED_CELL_RADIUS = 7;
+const COMBINED_HOUR_FONT_SIZE = 14;
+const COMBINED_LABEL_FONT_SIZE = 9;
+const COMBINED_GAP = 4;
 
-export const COMBINED_IMAGE_WIDTH = 1100;
-export const COMBINED_IMAGE_HEIGHT = 540;
+export const COMBINED_IMAGE_WIDTH = 770;
+export const COMBINED_IMAGE_HEIGHT = 378;
 
 /* =========================
    COMBINED CELL / GRID BUILDERS
@@ -476,7 +476,7 @@ const buildDayColumn = (hoursData: HoursData, subtitle: string) =>
     children: [
       el("div", {
         style: {
-          fontSize: "20px",
+          fontSize: "14px",
           color: COLORS.subtitle,
         },
         children: subtitle,
@@ -508,13 +508,13 @@ export const buildCombinedOutageTableElement = (
       width: `${COMBINED_IMAGE_WIDTH}px`,
       height: `${COMBINED_IMAGE_HEIGHT}px`,
       backgroundColor: COLORS.bg,
-      padding: "30px 40px",
-      gap: "10px",
+      padding: "21px 28px",
+      gap: "7px",
     },
     children: [
       el("div", {
         style: {
-          fontSize: "32px",
+          fontSize: "22px",
           fontWeight: "700",
           color: COLORS.title,
         },
@@ -524,7 +524,7 @@ export const buildCombinedOutageTableElement = (
         style: {
           ...flex,
           flexDirection: "row",
-          gap: "24px",
+          gap: "17px",
           alignItems: "flex-start",
         },
         children: [
