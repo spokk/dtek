@@ -22,5 +22,10 @@
       "source": "/api/(.*)"
     }
   ],
-  "regions": ["fra1"]
+  "regions": ["fra1"],
+  "functions": {
+    "api/**/*.ts": {
+      "includeFiles": "assets/**"
+    }
+  }
 }

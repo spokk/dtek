@@ -1,4 +1,6 @@
 import { createHash } from "crypto";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { ImageResponse } from "@vercel/og";
 import {
   buildOutageTableElement,
@@ -19,28 +21,11 @@ const CACHE_TTL_SECONDS = 86400; // 24h
 
 let fontCache: ArrayBuffer | null = null;
 
-const GOOGLE_FONTS_CSS_URL =
-  "https://fonts.googleapis.com/css2?family=Inter:wght@700&subset=cyrillic";
-
-const fetchGoogleFontsCss = async (): Promise<string> => {
-  return fetch(GOOGLE_FONTS_CSS_URL, {
-    headers: { "User-Agent": "Mozilla/5.0" },
-  }).then((r) => r.text());
-};
-
-const extractFontUrlFromCss = (css: string): string => {
-  const match = css.match(/src:\s*url\(([^)]+)\)/);
-  if (!match) throw new Error("Failed to parse font URL from Google Fonts CSS");
-  return match[1];
-};
-
-const loadFont = async (): Promise<ArrayBuffer> => {
+const loadFont = (): ArrayBuffer => {
   if (fontCache) return fontCache;
-
-  const css = await fetchGoogleFontsCss();
-  const fontUrl = extractFontUrlFromCss(css);
-  fontCache = await fetch(fontUrl).then((r) => r.arrayBuffer());
-  return fontCache!;
+  const fontPath = join(process.cwd(), "assets", "Inter-Bold.ttf");
+  fontCache = readFileSync(fontPath).buffer as ArrayBuffer;
+  return fontCache;
 };
 
 const generateTableImage = async (
@@ -48,7 +33,7 @@ const generateTableImage = async (
   width: number,
   height: number,
 ): Promise<Buffer> => {
-  const fontData = await loadFont();
+  const fontData = loadFont();
 
   const response = new ImageResponse(element, {
     width,
