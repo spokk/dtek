@@ -1,19 +1,22 @@
 import "dotenv/config";
-import { Telegraf } from "telegraf";
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { Bot, InputFile, webhookCallback } from "grammy";
+import { autoRetry } from "@grammyjs/auto-retry";
 
 import { config } from "../src/config.js";
 import { getOutageImage } from "../src/infrastructure/imageService.js";
 import { getOutageData } from "../src/services/outageService.js";
 import { formatOutageMessage } from "../src/presentation/messageBuilder.js";
 
-const bot = new Telegraf(config.telegram.botToken);
+const botInfo = config.telegram.botInfo ? JSON.parse(config.telegram.botInfo) : undefined;
+const bot = new Bot(config.telegram.botToken, { botInfo });
+
+bot.api.config.use(autoRetry({ maxRetryAttempts: 3, maxDelaySeconds: 10 }));
 
 bot.command("dtek", async (ctx) => {
   try {
     console.log("DTEK command started");
 
-    await ctx.sendChatAction("typing");
+    ctx.replyWithChatAction("typing").catch(() => {});
 
     const outageData = await getOutageData();
     const outageMessage = formatOutageMessage(outageData);
@@ -24,10 +27,13 @@ bot.command("dtek", async (ctx) => {
     const canUseCaption = image && outageMessage.length < 1024;
 
     if (canUseCaption) {
-      return ctx.replyWithPhoto({ source: image }, { caption: outageMessage, parse_mode: "HTML" });
+      return ctx.replyWithPhoto(new InputFile(image), {
+        caption: outageMessage,
+        parse_mode: "HTML",
+      });
     }
 
-    if (image) await ctx.replyWithPhoto({ source: image });
+    if (image) await ctx.replyWithPhoto(new InputFile(image));
     return ctx.reply(outageMessage, { parse_mode: "HTML" });
   } catch (err) {
     console.error("DTEK command error:", err);
@@ -35,21 +41,10 @@ bot.command("dtek", async (ctx) => {
   }
 });
 
-export default async (req: VercelRequest, res: VercelResponse) => {
-  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+bot.catch((err) => {
+  console.error("Unhandled bot error:", err);
+});
 
-  if (
-    !config.telegram.webhookSecret ||
-    req.headers["x-telegram-bot-api-secret-token"] !== config.telegram.webhookSecret
-  ) {
-    return res.status(401).send("Unauthorized");
-  }
-
-  try {
-    await bot.handleUpdate(req.body as Parameters<typeof bot.handleUpdate>[0]);
-    res.status(200).send("OK");
-  } catch (err) {
-    console.error("Bot handling failed:", err);
-    res.status(500).send("Error processing bot handling.");
-  }
-};
+export default webhookCallback(bot, "https", {
+  secretToken: config.telegram.webhookSecret,
+});

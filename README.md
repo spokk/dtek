@@ -2,12 +2,12 @@
 
 Telegram bot that reports power outage status for DTEK Kyiv Region. Responds to the `/dtek` command with current outage info, schedule graphs, and regional power statistics from [Svitlobot](https://svitlobot.in.ua).
 
-Deployed as a serverless Vercel function, triggered via Telegram webhook.
+Built with [grammY](https://grammy.dev) and deployed as a serverless Vercel function via Telegram webhook.
 
 ## Architecture
 
 ```
-api/bot.ts                  ← Vercel entrypoint, Telegram webhook handler
+api/bot.ts                  ← Vercel entrypoint, grammY webhook handler (https adapter)
 src/
   config.ts                 ← Environment variable validation and app configuration
   types.ts                  ← Shared TypeScript type definitions
@@ -34,6 +34,7 @@ src/
    | -------------------------- | ------------------------------------------------------- |
    | `TELEGRAM_BOT_TOKEN`       | Bot token from [@BotFather](https://t.me/BotFather)     |
    | `TELEGRAM_WEBHOOK_SECRET`  | Secret for validating incoming webhook requests         |
+   | `TELEGRAM_BOT_INFO`        | _(optional)_ Cached JSON from `getMe` to skip cold-start API call |
    | `DTEK_COOKIE`              | Session cookie for DTEK API                             |
    | `DTEK_CSRF_TOKEN`          | CSRF token for DTEK API                                 |
    | `DTEK_CITY`                | City ID for DTEK lookup                                 |

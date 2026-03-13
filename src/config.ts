@@ -21,6 +21,7 @@ export const config: AppConfig = {
   telegram: {
     botToken: process.env.TELEGRAM_BOT_TOKEN!,
     webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET!,
+    botInfo: process.env.TELEGRAM_BOT_INFO,
   },
   dtek: {
     csrfToken: process.env.DTEK_CSRF_TOKEN!,
