@@ -15,7 +15,7 @@ Telegram bot (grammY) deployed as a Vercel serverless function (`api/bot.ts`).
 
 - Uses `webhookCallback(bot, "https")` with built-in secret token validation
 - `@grammyjs/auto-retry` plugin for automatic flood limit / 429 handling
-- Optional `botInfo` via `TELEGRAM_BOT_INFO` env var to skip `getMe` on cold starts
+- `botInfo` cached in Redis to skip `getMe` on cold starts
 
 - `src/config.ts` — Environment variable validation and app configuration
 - `src/types.ts` — Shared TypeScript type definitions

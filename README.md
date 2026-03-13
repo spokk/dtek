@@ -34,7 +34,6 @@ src/
    | -------------------------- | ------------------------------------------------------- |
    | `TELEGRAM_BOT_TOKEN`       | Bot token from [@BotFather](https://t.me/BotFather)     |
    | `TELEGRAM_WEBHOOK_SECRET`  | Secret for validating incoming webhook requests         |
-   | `TELEGRAM_BOT_INFO`        | _(optional)_ Cached JSON from `getMe` to skip cold-start API call |
    | `DTEK_COOKIE`              | Session cookie for DTEK API                             |
    | `DTEK_CSRF_TOKEN`          | CSRF token for DTEK API                                 |
    | `DTEK_CITY`                | City ID for DTEK lookup                                 |

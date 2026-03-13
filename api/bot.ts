@@ -1,16 +1,11 @@
 import "dotenv/config";
-import { Bot, InputFile, webhookCallback } from "grammy";
-import { autoRetry } from "@grammyjs/auto-retry";
+import { InputFile, webhookCallback } from "grammy";
 
 import { config } from "../src/config.js";
+import { bot } from "../src/lib/bot.js";
 import { getOutageImage } from "../src/infrastructure/imageService.js";
 import { getOutageData } from "../src/services/outageService.js";
 import { formatOutageMessage } from "../src/presentation/messageBuilder.js";
-
-const botInfo = config.telegram.botInfo ? JSON.parse(config.telegram.botInfo) : undefined;
-const bot = new Bot(config.telegram.botToken, { botInfo });
-
-bot.api.config.use(autoRetry({ maxRetryAttempts: 3, maxDelaySeconds: 10 }));
 
 bot.command("dtek", async (ctx) => {
   try {

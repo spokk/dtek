@@ -2,7 +2,6 @@
 export interface TelegramConfig {
   botToken: string;
   webhookSecret: string;
-  botInfo?: string;
 }
 
 export interface DtekConfig {
