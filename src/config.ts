@@ -33,4 +33,8 @@ export const config: AppConfig = {
     cities: process.env.POWER_CITIES ?? "",
     region: process.env.POWER_REGION ?? "Регіон",
   },
+  redis: {
+    url: process.env.UPSTASH_REDIS_REST_URL!,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+  },
 };

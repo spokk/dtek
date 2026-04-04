@@ -17,10 +17,16 @@ export interface PowerConfig {
   region: string;
 }
 
+export interface RedisConfig {
+  url: string;
+  token: string;
+}
+
 export interface AppConfig {
   telegram: TelegramConfig;
   dtek: DtekConfig;
   power: PowerConfig;
+  redis: RedisConfig;
 }
 
 // === DTEK API Response ===

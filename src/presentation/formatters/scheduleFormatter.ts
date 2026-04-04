@@ -5,6 +5,7 @@ import type { HoursData, DtekPreset, TimeSegment } from "../../types.js";
 const STATUS_ICONS: Record<string, string> = {
   yes: "🟢",
   no: "🔴",
+  maybe: "🟡",
   mfirst: "🟡",
   msecond: "🟡",
 };
@@ -32,6 +33,8 @@ const buildHalfHourSlots = (hoursData: HoursData): TimeSegment[] => {
       slots.push(createSegment(t1, t3, "yes"));
     } else if (status === "no") {
       slots.push(createSegment(t1, t3, "no"));
+    } else if (status === "maybe") {
+      slots.push(createSegment(t1, t3, "maybe"));
     } else if (status === "first") {
       slots.push(createSegment(t1, t2, "no"));
       slots.push(createSegment(t2, t3, "yes"));
@@ -68,8 +71,8 @@ const mergeAdjacentSegments = (segments: TimeSegment[]): TimeSegment[] => {
 };
 
 const formatSegment = (segment: TimeSegment, timeType: Record<string, string>): string => {
-  const icon = STATUS_ICONS[segment.status];
-  const label = timeType[segment.status];
+  const icon = STATUS_ICONS[segment.status] ?? "⚪️";
+  const label = timeType[segment.status] ?? segment.status;
   return `${icon} ${segment.from} – ${segment.to} — ${label}`;
 };
 

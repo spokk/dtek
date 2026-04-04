@@ -47,12 +47,14 @@ function formatPowerOutagePeriod(startInput: string, endInput: string): string {
 }
 
 const formatOutageDetails = (house: HouseData, currentDate: string): string[] => {
-  const timeSince = calculateTimeDifference(house.start_date!, currentDate) || "Невідомо";
-  const timeUntil = calculateTimeDifference(currentDate, house.end_date!) || "Невідомо";
-  const powerOutagePeriod = formatPowerOutagePeriod(house.start_date!, house.end_date!);
+  const startDate = house.start_date ?? "";
+  const endDate = house.end_date ?? "";
+  const timeSince = calculateTimeDifference(startDate, currentDate) || "Невідомо";
+  const timeUntil = calculateTimeDifference(currentDate, endDate) || "Невідомо";
+  const powerOutagePeriod = formatPowerOutagePeriod(startDate, endDate);
 
   return [
-    `❗️ <b>Тип:</b> ${escapeHtml(house.sub_type!)}`,
+    `❗️ <b>Тип:</b> ${escapeHtml(house.sub_type ?? "Невідомо")}`,
     `${powerOutagePeriod}`,
     `⛔️ <b>Без світла:</b> ${escapeHtml(timeSince)}\n🔌 <b>До відновлення:</b> ${escapeHtml(timeUntil)}`,
   ];
@@ -77,7 +79,7 @@ export const formatActiveOutageMessage = (data: MessageData): string => {
 
   const parts = [
     `🚨 <b>${escapeHtml(houseGroup)} | Відключення.</b>`,
-    ...formatOutageDetails(house!, currentDate),
+    ...(house ? formatOutageDetails(house, currentDate) : []),
     ...scheduleBlocks,
     formatPowerStats(powerStats),
     updateTimestamp ? `🕒 Оновлено: <i>${escapeHtml(updateTimestamp)}</i>` : null,

@@ -4,7 +4,9 @@ export const getHouseDataFromResponse = (
   dtekResponse: DtekResponse | null | undefined,
   houseNumber: string | undefined,
 ): HouseData | null => {
-  const houseData = dtekResponse?.data?.[houseNumber as string] ?? null;
+  if (!houseNumber) return null;
+
+  const houseData = dtekResponse?.data?.[houseNumber] ?? null;
 
   if (!houseData && dtekResponse?.data) {
     console.error(`DTEK_HOUSE key "${houseNumber}" not found in response data`);
